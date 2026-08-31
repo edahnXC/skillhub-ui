@@ -1,0 +1,398 @@
+<div class="detail-page">
+  <div class="container">
+    
+    <div class="page-header">
+      <a routerLink="/courses" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to Courses
+      </a>
+
+      @if (isAdmin || isSubAdmin) {
+        <a routerLink="/admin/courses" class="admin-nav-back">
+          ⚙️ Admin Course Management
+        </a>
+      }
+    </div>
+
+    <!-- ── Admin Pre-Approval Inspection Banner ─────── -->
+    @if (course && !course.isPublished && (isApprover || isOwner)) {
+      <div class="pre-approval-banner">
+        <div class="banner-content">
+          <div class="banner-status-tag">⏳ Pre-Approval Review Mode</div>
+          <h2>Administrator Course Inspection</h2>
+          <p>This course is currently <strong>Draft / Unpublished</strong>. As an authorized moderator, you can thoroughly review the curriculum, preview video lectures, inspect downloadable resources, and test quizzes prior to making it public.</p>
+        </div>
+        <div class="banner-actions">
+          <a [routerLink]="['/learn', course.id]" class="btn-banner-player" title="Launch classroom player in inspection mode">
+            ▶ Preview in Player
+          </a>
+          @if (isApprover) {
+            <button type="button" class="btn-banner-approve" (click)="approveCourseDirectly()" [disabled]="isApproving">
+              {{ isApproving ? 'Approving...' : '✅ Approve &amp; Publish Course' }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    @if (isLoading) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading course details...</p>
+      </div>
+    } @else if (error) {
+      <div class="error-state">
+        <div class="state-icon">⚠️</div>
+        <h3>Course Not Found</h3>
+        <p>{{ error }}</p>
+        <a routerLink="/courses" class="btn-primary">Browse All Courses</a>
+      </div>
+    } @else if (course) {
+      <div class="course-detail-container">
+        
+        <!-- Main Content (Left) -->
+        <div class="main-content">
+          <div class="course-header">
+            <div class="header-badges">
+              <span class="category-badge">{{ course.categoryName }}</span>
+              
+              @if (!course.isPublished) {
+                <span class="draft-badge">○ Draft / Pending Approval</span>
+              } @else {
+                <span class="published-badge">● Published</span>
+              }
+
+              @if (reviewSummary && reviewSummary.totalReviews > 0) {
+                <span class="rating-badge">
+                  ★ {{ reviewSummary.averageRating }} ({{ reviewSummary.totalReviews }} {{ reviewSummary.totalReviews === 1 ? 'review' : 'reviews' }})
+                </span>
+              }
+            </div>
+            <h1>{{ course.title }}</h1>
+            <p class="instructor-info">
+              Created by <strong>{{ course.instructorName }}</strong>
+            </p>
+          </div>
+
+          @if (course.thumbnailUrl) {
+            <div class="course-image">
+              <img [src]="course.thumbnailUrl" [alt]="course.title" [title]="course.title">
+            </div>
+          }
+
+          <div class="course-description">
+            <h3>About this course</h3>
+            <p>{{ course.description }}</p>
+          </div>
+
+          <!-- Curriculum Section -->
+          <div class="curriculum-section">
+            <div class="curriculum-header">
+              <div class="curriculum-title-group">
+                <h3>Course Curriculum</h3>
+                <span class="curriculum-stats">
+                  {{ sections.length }} sections • {{ totalLessonsCount }} lectures • {{ totalDurationFormatted }} total length
+                </span>
+              </div>
+              <div class="curriculum-actions">
+                <button type="button" class="btn-text" (click)="expandAllSections()">Expand all</button>
+                <span class="divider">•</span>
+                <button type="button" class="btn-text" (click)="collapseAllSections()">Collapse all</button>
+              </div>
+            </div>
+
+            @if (isLoadingCurriculum) {
+              <div class="curriculum-loading">
+                <div class="spinner-sm"></div>
+                <span>Loading curriculum modules...</span>
+              </div>
+            } @else if (sections.length > 0) {
+              <div class="accordion">
+                @for (section of sections; track section.id; let sIdx = $index) {
+                  <div class="accordion-item" [class.expanded]="expandedSections[section.id]">
+                    <button 
+                      type="button" 
+                      class="accordion-header" 
+                      (click)="toggleSection(section.id)"
+                      [attr.aria-expanded]="expandedSections[section.id]">
+                      <div class="section-title-wrap">
+                        <span class="chevron" [class.rotated]="expandedSections[section.id]">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </span>
+                        <span class="section-title">{{ section.title }}</span>
+                      </div>
+                      <div class="section-meta">
+                        <span class="lesson-count">{{ section.lessons.length }} lectures</span>
+                      </div>
+                    </button>
+
+                    @if (expandedSections[section.id]) {
+                      <div class="accordion-content">
+                        <ul class="lesson-list">
+                          @for (lesson of section.lessons; track lesson.id; let lIdx = $index) {
+                            <li class="lesson-item">
+                              <div class="lesson-title-group">
+                                <span class="play-icon">▶</span>
+                                <span class="lesson-title">{{ lesson.title }}</span>
+                              </div>
+                              <div class="lesson-info">
+                                @if (lesson.resources && lesson.resources.length > 0) {
+                                  <span class="resource-pill" [title]="lesson.resources.length + ' downloadable files'">
+                                    📎 {{ lesson.resources.length }} {{ lesson.resources.length === 1 ? 'file' : 'files' }}
+                                  </span>
+                                }
+                                <span class="lesson-duration">
+                                  {{ lesson.durationMinutes > 0 ? lesson.durationMinutes + 'm' : '< 1m' }}
+                                </span>
+                              </div>
+                            </li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-curriculum">
+                <p>No sections or lectures uploaded for this course yet.</p>
+              </div>
+            }
+          </div>
+
+          <!-- Reviews & Ratings Section -->
+          <div class="reviews-section">
+            <div class="reviews-header">
+              <div class="reviews-title-group">
+                <h3>Student Feedback &amp; Reviews</h3>
+                @if (reviewSummary) {
+                  <span class="reviews-count-badge">
+                    {{ reviewSummary.totalReviews }} {{ reviewSummary.totalReviews === 1 ? 'Rating' : 'Ratings' }}
+                  </span>
+                }
+              </div>
+
+              @if (isEnrolled && isStudent) {
+                <button type="button" class="btn-write-review" (click)="openReviewModal()">
+                  ✍️ Write a Review
+                </button>
+              }
+            </div>
+
+            @if (isLoadingReviews) {
+              <div class="curriculum-loading">
+                <div class="spinner-sm"></div>
+                <span>Loading student reviews...</span>
+              </div>
+            } @else if (reviewSummary && reviewSummary.totalReviews > 0) {
+              
+              <!-- Review Breakdown Summary Card -->
+              <div class="rating-overview-card">
+                <div class="score-box">
+                  <div class="score-number">{{ reviewSummary.averageRating }}</div>
+                  <div class="score-stars">
+                    @for (s of [1, 2, 3, 4, 5]; track s) {
+                      <span class="star" [class.filled]="s <= reviewSummary.averageRating">★</span>
+                    }
+                  </div>
+                  <div class="score-label">Course Average Rating</div>
+                </div>
+
+                <div class="breakdown-bars">
+                  @for (star of [5, 4, 3, 2, 1]; track star) {
+                    <div class="breakdown-row">
+                      <span class="bar-label">{{ star }} ★</span>
+                      <div class="bar-track">
+                        <div class="bar-fill" [style.width.%]="getRatingPercentage(star)"></div>
+                      </div>
+                      <span class="bar-percentage">{{ getRatingPercentage(star) }}%</span>
+                      <span class="bar-count">({{ getRatingCount(star) }})</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Reviews List -->
+              <div class="reviews-list">
+                @for (rev of reviewSummary.reviews; track rev.id) {
+                  <div class="review-card">
+                    <div class="review-card-header">
+                      <div class="reviewer-profile">
+                        <div class="reviewer-avatar">
+                          {{ rev.studentName.charAt(0).toUpperCase() }}
+                        </div>
+                        <div class="reviewer-info">
+                          <div class="reviewer-name">{{ rev.studentName }}</div>
+                          <div class="review-date">{{ rev.createdAt | date:'mediumDate' }}</div>
+                        </div>
+                      </div>
+
+                      <div class="review-stars">
+                        @for (s of [1, 2, 3, 4, 5]; track s) {
+                          <span class="star" [class.filled]="s <= rev.rating">★</span>
+                        }
+                      </div>
+                    </div>
+
+                    @if (rev.reviewText) {
+                      <p class="review-text">{{ rev.reviewText }}</p>
+                    }
+                  </div>
+                }
+              </div>
+
+            } @else {
+              <div class="empty-reviews">
+                <div class="empty-icon">⭐</div>
+                <h4>No Reviews Yet</h4>
+                <p>Be the first enrolled student to leave a review and share your learning experience!</p>
+                @if (isEnrolled && isStudent) {
+                  <button type="button" class="btn-primary-sm" (click)="openReviewModal()">Write First Review</button>
+                }
+              </div>
+            }
+          </div>
+
+        </div>
+
+        <!-- Sidebar (Right) -->
+        <div class="sidebar">
+          <div class="pricing-card">
+            <div class="price-section">
+              @if (course.discountPrice) {
+                <span class="current-price">₹{{ course.discountPrice }}</span>
+                <span class="original-price">₹{{ course.price }}</span>
+              } @else {
+                <span class="current-price">{{ course.price === 0 ? 'Free' : '₹' + course.price }}</span>
+              }
+            </div>
+
+            @if (!isOwner && !isApprover) {
+              @if (isEnrolled) {
+                <a [routerLink]="['/learn', course.id]" class="btn-success w-100 enroll-btn text-center" style="font-weight: 700;">
+                  ▶ Go to Classroom
+                </a>
+              } @else if (isLoggedIn && !isStudent) {
+                <button class="btn-secondary w-100 enroll-btn" disabled>
+                  Only students can enroll
+                </button>
+              } @else {
+                <button class="btn-primary w-100 enroll-btn" (click)="enroll()" [disabled]="isEnrolling">
+                  {{ isEnrolling ? 'Enrolling...' : 'Enroll Now' }}
+                </button>
+              }
+            }
+
+            <!-- Admin / Moderator Controls Card -->
+            @if (isApprover) {
+              <div class="admin-sidebar-box">
+                <h4>🛡️ Admin Moderation</h4>
+                <div class="admin-action-stack">
+                  <a [routerLink]="['/learn', course.id]" class="btn-admin-player">
+                    ▶ Inspect in Player
+                  </a>
+
+                  @if (!course.isPublished) {
+                    <button type="button" class="btn-admin-approve" (click)="approveCourseDirectly()" [disabled]="isApproving">
+                      {{ isApproving ? 'Approving...' : '✅ Approve Course' }}
+                    </button>
+                  } @else {
+                    <div class="pill-live-badge">✓ Live to Public</div>
+                  }
+                </div>
+              </div>
+            }
+
+            <p class="money-back">30-Day Money-Back Guarantee</p>
+
+            <div class="course-includes">
+              <h4>This course includes:</h4>
+              <ul>
+                <li>📹 Full lifetime access to all lectures</li>
+                <li>⏱️ {{ totalDurationFormatted }} on-demand video</li>
+                <li>📝 Interactive Mastery Quizzes &amp; Exams</li>
+                <li>📱 Access on mobile and desktop</li>
+                <li>🏆 Verifiable Certificate of Completion</li>
+              </ul>
+            </div>
+
+            <!-- Instructor Controls -->
+            @if (isOwner) {
+              <div class="instructor-controls">
+                <h4>Instructor Actions</h4>
+                <div class="action-buttons">
+                  <a [routerLink]="['/courses', course.id, 'edit']" class="btn-primary w-100 text-center" style="text-decoration: none;">
+                    ✏️ Edit Course &amp; Curriculum
+                  </a>
+                  <a [routerLink]="['/learn', course.id]" class="btn-outline w-100 text-center" style="text-decoration: none; margin-top: 8px;">
+                    ▶ Preview as Student
+                  </a>
+                </div>
+              </div>
+            }
+
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- ── Write Review Modal ────────────────────────── -->
+@if (showReviewModal) {
+  <div class="modal-backdrop" (click)="closeReviewModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Rate &amp; Review Course</h3>
+        <button type="button" class="close-btn" (click)="closeReviewModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="star-rating-picker">
+          <label>Select Rating</label>
+          <div class="stars-row">
+            @for (star of [1, 2, 3, 4, 5]; track star) {
+              <button 
+                type="button" 
+                class="star-btn" 
+                [class.active]="star <= selectedRating" 
+                (click)="setRating(star)">
+                ★
+              </button>
+            }
+          </div>
+          <span class="rating-hint">{{ selectedRating }} of 5 Stars</span>
+        </div>
+
+        <div class="form-group">
+          <label for="reviewComment">Your Feedback (Optional)</label>
+          <textarea 
+            id="reviewComment" 
+            [(ngModel)]="reviewComment" 
+            rows="4" 
+            placeholder="What did you like about this course? How did it help you build your skills?"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeReviewModal()">Cancel</button>
+        <button type="button" class="btn-primary" (click)="submitReview()" [disabled]="isSubmittingReview">
+          {{ isSubmittingReview ? 'Submitting...' : 'Submit Review' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Toast Feedback ────────────────────────────── -->
+@if (showToast) {
+  <div class="toast-popup">
+    {{ toastMessage }}
+  </div>
+}

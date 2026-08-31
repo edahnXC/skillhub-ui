@@ -1,0 +1,131 @@
+<div class="create-page">
+  <div class="container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <a routerLink="/courses" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to Courses
+      </a>
+      <h1>Create a New Course</h1>
+      <p>Share your knowledge and help students grow</p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="create-card">
+      <form [formGroup]="courseForm" (ngSubmit)="onSubmit()" class="auth-form">
+
+        <!-- ── Section: Basic Info ────────────────── -->
+        <div class="form-section-label">
+          <span class="form-section-icon">📝</span>
+          Basic Information
+        </div>
+
+        <div class="form-group">
+          <label for="title">Course Title <span class="field-required">*</span></label>
+          <input
+            id="title"
+            type="text"
+            formControlName="title"
+            placeholder="e.g. Complete Web Development Bootcamp" />
+          <span class="field-hint">A clear, specific title helps students find your course</span>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description <span class="field-required">*</span></label>
+          <textarea
+            id="description"
+            formControlName="description"
+            placeholder="Describe what students will learn — key topics, outcomes, prerequisites…">
+          </textarea>
+          <span class="field-hint">Minimum 10 characters. Use bullet points to highlight key outcomes</span>
+        </div>
+
+        <!-- ── Section: Pricing ──────────────────── -->
+        <div class="form-section-label">
+          <span class="form-section-icon">💰</span>
+          Pricing
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Price (INR) <span class="field-required">*</span></label>
+            <input
+              id="price"
+              type="number"
+              formControlName="price"
+              placeholder="0"
+              min="0"
+              step="0.01" />
+            <span class="field-hint">Set 0 for a free course</span>
+          </div>
+          <div class="form-group">
+            <label for="discountPrice">Discount Price (INR)</label>
+            <input
+              id="discountPrice"
+              type="number"
+              formControlName="discountPrice"
+              placeholder="Optional"
+              min="0"
+              step="0.01" />
+            <span class="field-hint">Leave blank for no discount</span>
+          </div>
+        </div>
+
+        <!-- ── Section: Media & Category ────────── -->
+        <div class="form-section-label">
+          <span class="form-section-icon">🖼️</span>
+          Media &amp; Category
+        </div>
+
+        <div class="form-group">
+          <label for="thumbnailUrl">Course Thumbnail</label>
+          <input
+            id="thumbnailUrl"
+            type="file"
+            accept="image/*"
+            (change)="onFileSelected($event)" />
+          
+          @if (isUploading) {
+            <span class="field-hint" style="color: #667eea; font-weight: bold;">Uploading image...</span>
+          } @else if (thumbnailPreviewUrl) {
+            <div class="image-preview" style="margin-top: 10px;">
+              <img [src]="thumbnailPreviewUrl" alt="Thumbnail Preview" style="max-width: 200px; border-radius: 8px;" />
+              <span class="field-hint" style="display: block; margin-top: 5px;">Image uploaded successfully!</span>
+            </div>
+          } @else {
+            <span class="field-hint">Optional — a 16:9 image works best (e.g. 1280×720 px)</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="categoryId">Category <span class="field-required">*</span></label>
+          <select
+            id="categoryId"
+            formControlName="categoryId">
+            <option value="" disabled selected>Select a category</option>
+            @for (category of categories; track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
+          </select>
+          <span class="field-hint">Select the category that best fits your course</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <a routerLink="/courses" class="btn-secondary">Cancel</a>
+          <button
+            class="btn-primary btn-submit"
+            type="submit"
+            [disabled]="courseForm.invalid || isSubmitting">
+            {{ isSubmitting ? 'Creating…' : 'Create Course' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

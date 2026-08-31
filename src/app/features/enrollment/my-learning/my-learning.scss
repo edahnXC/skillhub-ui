@@ -1,0 +1,158 @@
+.my-learning-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+
+  @media (max-width: 768px) {
+    padding: 32px 16px 60px;
+  }
+}
+
+.header-section {
+  margin-bottom: 36px;
+
+  h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+}
+
+.course-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+
+  .card-image {
+    height: 180px;
+    width: 100%;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+  }
+
+  &:hover .card-image img {
+    transform: scale(1.05);
+  }
+
+  .card-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .badge {
+      align-self: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .course-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0 0 6px;
+      line-height: 1.35;
+    }
+
+    .instructor-name {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0 0 16px;
+      font-weight: 500;
+    }
+
+    .progress-section {
+      margin-top: auto;
+      margin-bottom: 16px;
+
+      .progress-bar {
+        height: 6px;
+        background: var(--bg-alt);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 6px;
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, var(--primary), var(--secondary));
+          border-radius: 3px;
+        }
+      }
+
+      .progress-text {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+    }
+
+    .card-footer {
+      margin-top: 8px;
+
+      .w-100 {
+        width: 100%;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+    }
+  }
+}
+
+.state-container {
+  text-align: center;
+  padding: 80px 24px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-color);
+
+  .empty-illustration {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 15px;
+    color: var(--text-muted);
+    max-width: 480px;
+    margin: 0 auto 28px;
+    line-height: 1.6;
+  }
+
+  .btn-lg {
+    padding: 14px 28px;
+    font-size: 15px;
+    border-radius: var(--radius-full);
+  }
+}

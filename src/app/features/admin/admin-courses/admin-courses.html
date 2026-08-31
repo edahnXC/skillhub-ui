@@ -1,0 +1,121 @@
+<div class="admin-page-header">
+  <div class="header-info">
+    <div class="badge-tag">Platform Quality &amp; Approval</div>
+    <h1>Course Management &amp; Moderation</h1>
+    <p>Inspect and review all platform courses, preview curriculum lectures and videos before granting publication approval.</p>
+  </div>
+</div>
+
+<div class="admin-card">
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading platform courses...</p>
+    </div>
+  } @else if (error) {
+    <div class="error-state">{{ error }}</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title &amp; Info</th>
+            <th>Instructor</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Approval Status</th>
+            <th>Created</th>
+            <th class="text-right">Inspection &amp; Moderation</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (course of courses; track course.id; let i = $index) {
+            <tr [class.row-draft]="!course.isPublished">
+              <td>{{ i + 1 }}</td>
+              <td class="font-medium">
+                <div class="course-title-wrap">
+                  <a [routerLink]="['/courses', course.id]" class="course-title-link" title="Click to view complete course details &amp; curriculum">
+                    {{ course.title }}
+                  </a>
+                  @if (!course.isPublished) {
+                    <span class="pill-pending">⏳ Needs Approval</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="instructor-cell">
+                  <span class="instructor-icon">👤</span>
+                  <span>{{ course.instructorName }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="category-tag">{{ course.categoryName }}</span>
+              </td>
+              <td>₹{{ course.price }}</td>
+              <td>
+                <span class="status-badge" [class.published]="course.isPublished" [class.draft]="!course.isPublished">
+                  {{ course.isPublished ? '● Published' : '○ Draft / Pending' }}
+                </span>
+              </td>
+              <td>{{ course.createdAt | date:'mediumDate' }}</td>
+              <td class="text-right">
+                <div class="action-buttons">
+                  
+                  <!-- 1. View / Preview Details Link -->
+                  <a 
+                    [routerLink]="['/courses', course.id]" 
+                    class="btn-preview" 
+                    title="View complete course syllabus and description">
+                    👁️ View Details
+                  </a>
+
+                  <!-- 2. Inspect in Course Player -->
+                  <a 
+                    [routerLink]="['/learn', course.id]" 
+                    class="btn-player" 
+                    title="Open classroom player to inspect video lectures &amp; resources">
+                    ▶ Player
+                  </a>
+
+                  <!-- 3. Approve Button -->
+                  @if (!course.isPublished) {
+                    <button 
+                      type="button"
+                      class="btn-approve" 
+                      (click)="approveCourse(course.id)"
+                      [disabled]="isApprovingId === course.id"
+                      title="Approve and make course live to the public">
+                      {{ isApprovingId === course.id ? 'Approving...' : '✅ Approve' }}
+                    </button>
+                  }
+
+                  <!-- 4. Delete Button -->
+                  <button 
+                    type="button"
+                    class="btn-delete" 
+                    (click)="deleteCourse(course.id)"
+                    title="Permanently remove course">
+                    🗑️ Delete
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="text-center">No courses found on the platform.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- ── Toast Feedback ────────────────────────────── -->
+@if (showToast) {
+  <div class="toast-popup">
+    {{ toastMessage }}
+  </div>
+}

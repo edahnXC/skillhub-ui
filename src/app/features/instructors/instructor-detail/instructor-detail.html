@@ -1,0 +1,95 @@
+<div class="instructor-detail-page">
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="container section">
+      <div class="skeleton-header"></div>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !isLoading) {
+    <div class="container section">
+      <div class="state-container">
+        <div class="state-icon">⚠️</div>
+        <h3>Something went wrong</h3>
+        <p class="state-text">{{ error }}</p>
+        <button class="btn-secondary" routerLink="/instructors">Back to Instructors</button>
+      </div>
+    </div>
+  }
+
+  <!-- Content -->
+  @if (!isLoading && !error && instructor) {
+    <!-- Profile Header -->
+    <div class="instructor-profile-header">
+      <div class="container">
+        <a routerLink="/instructors" class="back-link">← Back to Instructors</a>
+        
+        <div class="profile-card">
+          <div class="profile-avatar" [style.background]="getGradient(instructor.id)">
+            @if (instructor.profileImageUrl) {
+              <img [src]="instructor.profileImageUrl" [alt]="instructor.firstName + ' ' + instructor.lastName" [title]="instructor.firstName + ' ' + instructor.lastName" />
+            } @else {
+              <span class="avatar-initials">{{ getInitials(instructor.firstName, instructor.lastName) }}</span>
+            }
+          </div>
+          <div class="profile-info">
+            <h1>{{ instructor.firstName }} {{ instructor.lastName }}</h1>
+            <p class="email">{{ instructor.email }}</p>
+            <div class="stats">
+              <span class="stat-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3L2 8l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 16l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                {{ courses.length }} {{ courses.length === 1 ? 'Course' : 'Courses' }} Published
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Courses Grid -->
+    <div class="container section">
+      <h2>Courses by {{ instructor.firstName }}</h2>
+      
+      @if (courses.length === 0) {
+        <div class="state-container">
+          <div class="state-icon">📚</div>
+          <h3>No courses yet</h3>
+          <p class="state-text">This instructor hasn't published any courses yet.</p>
+        </div>
+      } @else {
+        <div class="courses-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+          @for (course of courses; track course.id) {
+            <article class="course-card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;">
+              <div class="course-thumbnail" style="height: 180px; background: #f3f4f6; position: relative;">
+                @if (course.thumbnailUrl) {
+                  <img [src]="course.thumbnailUrl" [alt]="course.title" [title]="course.title" style="width: 100%; height: 100%; object-fit: cover;" />
+                } @else {
+                  <div class="placeholder-thumbnail" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </div>
+                }
+              </div>
+              <div class="course-content" style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                <h3 class="course-title" style="margin: 0 0 0.5rem; font-size: 1.125rem; font-weight: 600; color: #1f2937;">{{ course.title }}</h3>
+                <div class="course-price" style="margin-top: auto; padding-top: 1rem;">
+                  <span class="price-current" style="font-size: 1.25rem; font-weight: 700; color: #4f46e5;">₹{{ course.price }}</span>
+                </div>
+                <div style="margin-top: 1rem;">
+                  <a [routerLink]="['/courses', course.id]" class="btn-enroll" style="display: block; width: 100%; text-align: center; background: #f3f4f6; color: #4f46e5; text-decoration: none; padding: 0.75rem; border-radius: 8px; font-weight: 500; transition: background 0.2s;">View Course</a>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

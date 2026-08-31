@@ -1,0 +1,38 @@
+<div class="success-page">
+  <div class="container">
+    <div class="card success-card">
+
+      @if (isVerifying) {
+        <div class="state-block">
+          <div class="spinner"></div>
+          <h2>Confirming Payment</h2>
+          <p>{{ message }}</p>
+        </div>
+      } @else if (isSuccess) {
+        <div class="state-block animate-fade-in-up">
+          <div class="success-icon-badge">🎉</div>
+          <h2>Payment Successful!</h2>
+          <p class="success-msg">{{ message }}</p>
+          <p class="sub-msg">Your course has been added to your learning dashboard.</p>
+          
+          <div class="action-row">
+            <a routerLink="/my-learning" class="btn-primary btn-lg">Go to My Learning →</a>
+            @if (courseId) {
+              <a [routerLink]="['/courses', courseId]" class="btn-secondary btn-lg">View Course Details</a>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="state-block error-block animate-fade-in-up">
+          <div class="error-icon-badge">⚠️</div>
+          <h2>Verification Failed</h2>
+          <p class="error-msg">{{ message }}</p>
+          <div class="action-row">
+            <a routerLink="/courses" class="btn-primary btn-lg">Return to Courses</a>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

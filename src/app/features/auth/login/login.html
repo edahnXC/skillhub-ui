@@ -1,0 +1,73 @@
+<div class="auth-container">
+  <div class="auth-card">
+
+    <!-- Brand mark -->
+    <div class="auth-brand">
+      <div class="auth-brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 3L2 8l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 16l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="auth-brand-name">SkillHub</span>
+    </div>
+
+    <h1 class="auth-title">Welcome Back</h1>
+    <p class="auth-subtitle">Sign in to continue learning</p>
+
+    <!-- Inline error banner (replaces browser alert) -->
+    @if (errorMessage) {
+      <div class="error-banner" role="alert">
+        <span class="error-banner-icon">⚠️</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-with-icon">
+          <span class="input-icon">✉️</span>
+          <input 
+            id="email" 
+            type="email" 
+            formControlName="email" 
+            placeholder="you@example.com" 
+            autocomplete="email" 
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🔒</span>
+          <input 
+            id="password" 
+            [type]="showPassword ? 'text' : 'password'" 
+            formControlName="password" 
+            placeholder="Enter your password" 
+            autocomplete="current-password" 
+          />
+          <button 
+            type="button" 
+            class="toggle-pwd-btn" 
+            (click)="togglePasswordVisibility()" 
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-primary" type="submit" [disabled]="loginForm.invalid || isSubmitting">
+        {{ isSubmitting ? 'Signing in…' : 'Sign In' }}
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Don't have an account? <a routerLink="/register">Create one free</a></p>
+    </div>
+
+  </div>
+</div>

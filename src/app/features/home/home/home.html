@@ -1,0 +1,173 @@
+<!-- ── Hero ────────────────────────────────────────── -->
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="hero-orb hero-orb-1" aria-hidden="true"></div>
+  <div class="hero-orb hero-orb-2" aria-hidden="true"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">🚀 New courses added every week</div>
+
+      <h1 class="hero-title" id="hero-heading">
+        Learn Without <span class="gradient-text">Limits</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Discover expert-led courses across web development, design, data science,
+        and more. Build real skills at your own pace — free to browse, always.
+      </p>
+
+      <div class="hero-actions">
+        <a routerLink="/courses" class="btn-hero-primary">
+          Browse Courses
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        @if (isLoggedIn) {
+          @if (canCreateCourse) {
+            <a routerLink="/courses/create" class="btn-hero-secondary">Create a Course</a>
+          }
+        } @else {
+          <a routerLink="/register" class="btn-hero-secondary">Get Started Free</a>
+        }
+      </div>
+
+      <!-- Trust indicators -->
+      <div class="hero-trust">
+        <span class="trust-item">✓ Free to browse</span>
+        <span class="trust-sep">·</span>
+        <span class="trust-item">✓ Expert instructors</span>
+        <span class="trust-sep">·</span>
+        <span class="trust-item">✓ Learn at your pace</span>
+      </div>
+    </div>
+
+    <!-- Decorative floating cards (purely visual) -->
+    <div class="hero-visual" aria-hidden="true">
+      <div class="floating-card fc1">
+        <span class="fc-icon">💻</span>
+        <span>Web Development</span>
+      </div>
+      <div class="floating-card fc2">
+        <span class="fc-icon">🎨</span>
+        <span>UI / UX Design</span>
+      </div>
+      <div class="floating-card fc3">
+        <span class="fc-icon">🤖</span>
+        <span>AI &amp; Machine Learning</span>
+      </div>
+      <div class="floating-card fc4">
+        <span class="fc-icon">📊</span>
+        <span>Data Science</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats Bar ───────────────────────────────────── -->
+<section class="stats-bar" aria-label="Platform statistics">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-number">100+</span>
+        <span class="stat-label">Courses Available</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">50+</span>
+        <span class="stat-label">Expert Instructors</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">5,000+</span>
+        <span class="stat-label">Students Learning</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">4.8 ★</span>
+        <span class="stat-label">Average Rating</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Categories ─────────────────────────────────── -->
+<section class="section" aria-labelledby="categories-heading">
+  <div class="container">
+    <h2 class="section-title" id="categories-heading">Explore Top Categories</h2>
+    <p class="section-subtitle">Start with whatever excites you most</p>
+
+    <div class="categories-grid">
+      <a routerLink="/courses" class="category-card" tabindex="0">
+        <div class="cat-icon cat-web">💻</div>
+        <span>Web Development</span>
+      </a>
+      <a routerLink="/courses" class="category-card" tabindex="0">
+        <div class="cat-icon cat-data">📊</div>
+        <span>Data Science</span>
+      </a>
+      <a routerLink="/courses" class="category-card" tabindex="0">
+        <div class="cat-icon cat-design">🎨</div>
+        <span>Design</span>
+      </a>
+      <a routerLink="/courses" class="category-card" tabindex="0">
+        <div class="cat-icon cat-mobile">📱</div>
+        <span>Mobile Dev</span>
+      </a>
+      <a routerLink="/courses" class="category-card" tabindex="0">
+        <div class="cat-icon cat-cloud">☁️</div>
+        <span>Cloud &amp; DevOps</span>
+      </a>
+      <a routerLink="/courses" class="category-card" tabindex="0">
+        <div class="cat-icon cat-ai">🤖</div>
+        <span>AI &amp; ML</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ───────────────────────────────── -->
+<section class="how-section section" aria-labelledby="how-heading">
+  <div class="container">
+    <h2 class="section-title" id="how-heading">How SkillHub Works</h2>
+    <p class="section-subtitle">Start learning in three simple steps</p>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">01</div>
+        <div class="step-icon">🔍</div>
+        <h3 class="step-title">Browse Courses</h3>
+        <p class="step-desc">Explore hundreds of expert-led courses across every skill level — completely free to browse.</p>
+      </div>
+      <div class="step-connector" aria-hidden="true"></div>
+      <div class="step-card">
+        <div class="step-number">02</div>
+        <div class="step-icon">📖</div>
+        <h3 class="step-title">Start Learning</h3>
+        <p class="step-desc">Enroll in a course, learn at your own pace, and track your progress along the way.</p>
+      </div>
+      <div class="step-connector" aria-hidden="true"></div>
+      <div class="step-card">
+        <div class="step-number">03</div>
+        <div class="step-icon">🏆</div>
+        <h3 class="step-title">Grow Your Skills</h3>
+        <p class="step-desc">Apply what you've learned, build real projects, and take your career to the next level.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA Banner ─────────────────────────────────── -->
+<section class="cta-section" aria-labelledby="cta-heading">
+  <div class="container">
+    <div class="cta-card">
+      <h2 id="cta-heading">Ready to start learning?</h2>
+      <p>Join thousands of students already growing their skills on SkillHub</p>
+      <div class="cta-actions">
+        <a routerLink="/courses" class="btn-cta-solid">Browse All Courses</a>
+        @if (!isLoggedIn) {
+          <a routerLink="/register" class="btn-cta-outline">Create Free Account</a>
+        }
+      </div>
+    </div>
+  </div>
+</section>

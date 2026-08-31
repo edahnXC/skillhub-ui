@@ -1,0 +1,176 @@
+<div class="admin-page-header">
+  <div class="header-text">
+    <h1>User Management &amp; Roles</h1>
+    <p>Manage platform accounts, monitor role assignments, and configure granular SubAdmin permissions.</p>
+  </div>
+</div>
+
+<div class="admin-card">
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner-sm"></div>
+      <span>Loading users...</span>
+    </div>
+  } @else if (error) {
+    <div class="error-state">{{ error }}</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>User</th>
+            <th>Email</th>
+            <th>Roles &amp; Access</th>
+            <th>Joined Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users; track user.id; let i = $index) {
+            <tr>
+              <td class="col-index">{{ i + 1 }}</td>
+              <td class="font-medium">
+                <div class="user-name-cell">
+                  <div class="user-avatar-initial">
+                    {{ user.firstName.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="user-details-text">
+                    <span class="full-name">{{ user.firstName }} {{ user.lastName }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ user.email }}</td>
+              <td>
+                <div class="role-tags">
+                  @for (role of user.roles; track role) {
+                    <span class="role-tag" [ngClass]="role.toLowerCase()">{{ role }}</span>
+                  }
+                </div>
+              </td>
+              <td>{{ user.createdAt | date:'mediumDate' }}</td>
+              <td>
+                <span class="status-badge" [class.active]="user.isActive">
+                  {{ user.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="action-btn-group">
+                  <!-- Granular SubAdmin Permission Configuration Trigger -->
+                  @if (isSubAdmin(user)) {
+                    <button 
+                      type="button" 
+                      class="btn-manage-perms" 
+                      (click)="openPermissionModal(user)"
+                      title="Configure Individual SubAdmin Permissions">
+                      🛡️ Permissions
+                    </button>
+                  }
+
+                  <button 
+                    type="button"
+                    class="btn-delete" 
+                    (click)="deleteUser(user.id)"
+                    [disabled]="user.roles.includes('SuperAdmin')">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center">No users found.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- ── Granular SubAdmin Permission Modal ────────────── -->
+@if (showPermissionModal && selectedSubAdmin) {
+  <div class="modal-backdrop" (click)="closePermissionModal()">
+    <div class="permission-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="badge-role">SubAdmin Access Control</span>
+          <h2>Configure Permissions for {{ selectedSubAdmin.firstName }} {{ selectedSubAdmin.lastName }}</h2>
+          <p>{{ selectedSubAdmin.email }}</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closePermissionModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-toolbar">
+          <div class="counter-badge">
+            {{ subAdminPermissionIds.size }} Permissions Granted
+          </div>
+          <div class="toolbar-actions">
+            <button type="button" class="btn-tool" (click)="selectAllModalPermissions()">Select All</button>
+            <button type="button" class="btn-tool" (click)="deselectAllModalPermissions()">Clear All</button>
+          </div>
+        </div>
+
+        @if (isLoadingSubAdminPerms) {
+          <div class="modal-loading">
+            <div class="spinner-sm"></div>
+            <span>Fetching user permission configuration...</span>
+          </div>
+        } @else {
+          <div class="modal-categories-grid">
+            @for (cat of categories; track cat.categoryName) {
+              <div class="modal-cat-card">
+                <div class="modal-cat-header">
+                  <span class="modal-cat-title">{{ cat.categoryName }}</span>
+                  <button 
+                    type="button" 
+                    class="btn-cat-quick" 
+                    (click)="toggleCategory(cat)">
+                    {{ isCategoryAllSelected(cat) ? 'Deselect All' : 'Select All' }}
+                  </button>
+                </div>
+
+                <div class="modal-perms-list">
+                  @for (perm of cat.permissions; track perm.id) {
+                    <label 
+                      class="modal-perm-item" 
+                      [class.active]="isPermissionSelected(perm.id)">
+                      <input 
+                        type="checkbox" 
+                        [checked]="isPermissionSelected(perm.id)" 
+                        (change)="togglePermission(perm.id)">
+                      <div class="modal-perm-info">
+                        <span class="token-name">{{ perm.name }}</span>
+                        <span class="token-desc">{{ perm.description }}</span>
+                      </div>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closePermissionModal()">Cancel</button>
+        <button 
+          type="button" 
+          class="btn-save-perms" 
+          [disabled]="isSavingPerms || isLoadingSubAdminPerms" 
+          (click)="saveSubAdminPermissions()">
+          {{ isSavingPerms ? 'Saving Changes...' : 'Save Permissions' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Toast Notification -->
+@if (showToast) {
+  <div class="toast-popup">
+    {{ toastMessage }}
+  </div>
+}

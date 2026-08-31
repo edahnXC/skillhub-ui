@@ -1,0 +1,54 @@
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <h2>Admin Panel</h2>
+    </div>
+    <nav class="sidebar-nav">
+      
+      <!-- Dynamic Tab: Users -->
+      <a 
+        *hasPermission="'Tabs.Users.View'" 
+        routerLink="/admin/users" 
+        routerLinkActive="active" 
+        class="nav-item">
+        <span class="icon">👥</span>
+        Users
+      </a>
+
+      <!-- Dynamic Tab: Courses -->
+      <a 
+        *hasPermission="'Tabs.Courses.View'" 
+        routerLink="/admin/courses" 
+        routerLinkActive="active" 
+        class="nav-item">
+        <span class="icon">📚</span>
+        Courses
+      </a>
+
+      <!-- Dynamic Tab: Create User -->
+      <a 
+        *hasPermission="'Tabs.CreateUser.View'" 
+        routerLink="/admin/create-user" 
+        routerLinkActive="active" 
+        class="nav-item">
+        <span class="icon">👤+</span>
+        Create User
+      </a>
+
+      <!-- Dynamic Tab: Dynamic Permission Studio -->
+      <a 
+        *hasPermission="'Tabs.RolesAndPermissions.View'" 
+        routerLink="/admin/permissions" 
+        routerLinkActive="active" 
+        class="nav-item">
+        <span class="icon">🛡️</span>
+        Permission Studio
+      </a>
+
+    </nav>
+  </aside>
+  
+  <main class="admin-main">
+    <router-outlet></router-outlet>
+  </main>
+</div>

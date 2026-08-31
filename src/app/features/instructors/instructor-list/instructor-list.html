@@ -1,0 +1,102 @@
+<div class="instructors-page">
+  <!-- Page Header -->
+  <div class="instructors-header">
+    <div class="container">
+      <div class="instructors-header-inner">
+        <div>
+          <h1>Our Instructors</h1>
+          <p>Learn from the best — explore our expert instructors</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section">
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search by name, email, or ID…"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+          id="instructor-search" />
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="instructors-grid">
+        @for (item of [1,2,3,4,5,6]; track item) {
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-avatar"></div>
+            <div class="skeleton skeleton-name"></div>
+            <div class="skeleton skeleton-email"></div>
+            <div class="skeleton skeleton-badge"></div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (error && !isLoading) {
+      <div class="state-container">
+        <div class="state-icon">⚠️</div>
+        <h3>Something went wrong</h3>
+        <p class="state-text">{{ error }}</p>
+        <button class="btn-secondary" (click)="loadInstructors()">Try Again</button>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading && !error && instructors.length === 0) {
+      <div class="state-container">
+        <div class="state-icon">👨‍🏫</div>
+        <h3>No instructors found</h3>
+        @if (searchQuery) {
+          <p class="state-text">No results for "{{ searchQuery }}". Try a different search.</p>
+        } @else {
+          <p class="state-text">No instructors are available yet.</p>
+        }
+      </div>
+    }
+
+    <!-- Instructor Grid -->
+    @if (!isLoading && !error && instructors.length > 0) {
+      <div class="instructors-grid">
+        @for (instructor of instructors; track instructor.id) {
+          <article class="instructor-card" [routerLink]="['/instructors', instructor.id]" style="cursor: pointer;">
+            <div class="instructor-avatar" [style.background]="getGradient(instructor.id)">
+              @if (instructor.profileImageUrl) {
+                <img [src]="instructor.profileImageUrl" [alt]="instructor.firstName + ' ' + instructor.lastName" [title]="instructor.firstName + ' ' + instructor.lastName" />
+              } @else {
+                <span class="avatar-initials">{{ getInitials(instructor.firstName, instructor.lastName) }}</span>
+              }
+            </div>
+            <div class="instructor-info">
+              <h3 class="instructor-name">{{ instructor.firstName }} {{ instructor.lastName }}</h3>
+              <p class="instructor-email">{{ instructor.email }}</p>
+              <div class="instructor-stats">
+                <span class="stat-badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3L2 8l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 16l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  {{ instructor.courseCount }} {{ instructor.courseCount === 1 ? 'Course' : 'Courses' }}
+                </span>
+                <span class="stat-id">ID: {{ instructor.id }}</span>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+
+  </div>
+</div>

@@ -1,0 +1,157 @@
+<!-- ── Page Header ─────────────────────────────────── -->
+<div class="courses-page">
+  <div class="courses-header">
+    <div class="container">
+      <div class="courses-header-inner">
+        <div>
+          <span class="header-tag">Explore Courses</span>
+          <h1>Master New Skills</h1>
+          <p>Browse our collection of expert-led courses across development, design, data & AI.</p>
+        </div>
+        @if (isLoggedIn && canCreateCourse) {
+          <a routerLink="/courses/create" class="btn-header-create">
+            <span>+</span> Create Course
+          </a>
+        }
+      </div>
+
+      <!-- Search & Filters Bar -->
+      <div class="search-filter-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery" 
+            placeholder="Search by course title, topic, or instructor..." 
+            class="search-input"
+          />
+          @if (searchQuery) {
+            <button class="clear-btn" (click)="searchQuery = ''">✕</button>
+          }
+        </div>
+
+        <div class="category-chips">
+          @for (cat of categories; track cat) {
+            <button 
+              class="chip" 
+              [class.active]="selectedCategory === cat" 
+              (click)="selectedCategory = cat">
+              {{ cat }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main Content ──────────────────────────────── -->
+  <div class="container section">
+
+    <!-- Skeleton Shimmer Loading State -->
+    @if (isLoading) {
+      <div class="courses-grid">
+        @for (item of [1,2,3,4,5,6]; track item) {
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-thumb"></div>
+            <div class="skeleton-body">
+              <div class="skeleton skeleton-badge"></div>
+              <div class="skeleton skeleton-title"></div>
+              <div class="skeleton skeleton-title skeleton-title-short"></div>
+              <div class="skeleton skeleton-desc"></div>
+              <div class="skeleton skeleton-desc skeleton-desc-short"></div>
+              <div class="skeleton skeleton-instructor"></div>
+            </div>
+            <div class="skeleton-footer">
+              <div class="skeleton skeleton-price"></div>
+              <div class="skeleton skeleton-btn"></div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (error && !isLoading) {
+      <div class="state-container">
+        <div class="state-icon">⚠️</div>
+        <h3>Something went wrong</h3>
+        <p class="state-text">{{ error }}</p>
+        <button class="btn-secondary" (click)="loadCourses()">Try Again</button>
+      </div>
+    }
+
+    <!-- Empty Filtered Results -->
+    @if (!isLoading && !error && filteredCourses.length === 0) {
+      <div class="state-container">
+        <div class="state-icon">🔍</div>
+        <h3>No courses found</h3>
+        <p class="state-text">No courses match your search "{{ searchQuery }}". Try adjusting your keywords or category filter.</p>
+        <button class="btn-secondary" (click)="searchQuery = ''; selectedCategory = 'All'">Reset Filters</button>
+      </div>
+    }
+
+    <!-- Course Grid -->
+    @if (!isLoading && !error && filteredCourses.length > 0) {
+      <div class="courses-results-meta">
+        <span>Showing <strong>{{ filteredCourses.length }}</strong> {{ filteredCourses.length === 1 ? 'course' : 'courses' }}</span>
+      </div>
+
+      <div class="courses-grid">
+        @for (course of filteredCourses; track course.id) {
+          <article class="course-card card-hover">
+
+            <!-- Thumbnail -->
+            <div class="course-thumbnail" [style.background]="getGradient(course.id)">
+              @if (course.thumbnailUrl) {
+                <img [src]="course.thumbnailUrl" [alt]="course.title" [title]="course.title" loading="lazy" />
+              } @else {
+                <div class="thumbnail-placeholder">
+                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3L2 8l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 16l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              }
+              @if (!course.isPublished) {
+                <span class="thumb-badge badge badge-muted">Draft</span>
+              }
+            </div>
+
+            <!-- Body -->
+            <div class="course-body">
+              <div class="course-meta">
+                @if (course.categoryName) {
+                  <span class="badge badge-primary">{{ course.categoryName }}</span>
+                }
+              </div>
+
+              <h2 class="course-title">{{ course.title }}</h2>
+              <p class="course-description">{{ course.description }}</p>
+
+              <div class="course-instructor">
+                <span class="instructor-avatar">{{ getInitial(course.instructorName) }}</span>
+                <span class="instructor-name">{{ course.instructorName }}</span>
+              </div>
+            </div>
+
+            <!-- Footer / Price -->
+            <div class="course-footer">
+              <div class="course-price">
+                @if (course.discountPrice !== null && course.discountPrice !== undefined) {
+                  <span class="price-original">₹{{ course.price }}</span>
+                  <span class="price-current">₹{{ course.discountPrice }}</span>
+                } @else {
+                  <span class="price-current">₹{{ course.price }}</span>
+                }
+              </div>
+              <a [routerLink]="['/courses', course.id]" class="btn-enroll">View Details →</a>
+            </div>
+
+          </article>
+        }
+      </div>
+    }
+
+  </div>
+</div>

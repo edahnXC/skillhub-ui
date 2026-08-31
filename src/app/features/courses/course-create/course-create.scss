@@ -1,0 +1,131 @@
+.create-page {
+  min-height: 100vh;
+  padding: 40px 0 80px;
+  background: var(--bg-color);
+}
+
+/* ── Page Header ────────────────────────── */
+.page-header {
+  margin-bottom: 28px;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 14px 0 6px;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    color: var(--text-muted);
+    font-size: 15px;
+    margin: 0;
+  }
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.18s;
+
+  svg {
+    transition: transform 0.18s;
+  }
+
+  &:hover {
+    color: var(--primary);
+
+    svg {
+      transform: translateX(-3px);
+    }
+  }
+}
+
+/* ── Create Card ────────────────────────── */
+.create-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  padding: 40px;
+  max-width: 640px;
+
+  @media (max-width: 640px) {
+    padding: 24px 20px;
+  }
+}
+
+/* ── Form Section Labels ─────────────────── */
+.form-section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 4px;
+
+  /* Add top margin for every section label except the first */
+  & + .form-group,
+  & + .form-row {
+    margin-top: 0;
+  }
+}
+
+/* push section labels down when they follow a form-group or form-row */
+.form-group + .form-section-label,
+.form-row + .form-section-label {
+  margin-top: 12px;
+}
+
+.form-section-icon {
+  font-size: 14px;
+}
+
+/* ── Field Required Mark ─────────────────── */
+.field-required {
+  color: var(--danger);
+  margin-left: 2px;
+}
+
+/* ── Field Hint Text ─────────────────────── */
+.field-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+/* ── Form Actions Row ───────────────────── */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+
+  .btn-secondary {
+    flex-shrink: 0;
+  }
+
+  .btn-submit {
+    flex: 1;
+  }
+
+  @media (max-width: 400px) {
+    flex-direction: column-reverse;
+
+    .btn-secondary,
+    .btn-submit {
+      width: 100%;
+    }
+  }
+}

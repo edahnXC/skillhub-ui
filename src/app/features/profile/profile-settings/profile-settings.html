@@ -1,0 +1,229 @@
+<div class="settings-page">
+  <div class="container">
+
+    <!-- Page Header -->
+    <div class="settings-header">
+      <span class="header-tag">Account</span>
+      <h1>Account Settings</h1>
+      <p>Manage your profile information, credentials, and account preferences.</p>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading your account settings...</p>
+      </div>
+    } @else if (error) {
+      <div class="state-container error-state">
+        <span class="state-icon">⚠️</span>
+        <p>{{ error }}</p>
+        <button class="btn-primary" (click)="loadProfile()">Retry</button>
+      </div>
+    } @else if (profile) {
+
+      <div class="settings-grid">
+        
+        <!-- Left Column: User Profile Overview Card -->
+        <div class="sidebar-col">
+          <div class="card profile-card">
+            <div class="avatar-wrapper">
+              <div class="avatar-large">{{ getInitials() }}</div>
+            </div>
+            
+            <h2 class="profile-name">{{ profile.firstName }} {{ profile.lastName }}</h2>
+            <p class="profile-email">{{ profile.email }}</p>
+
+            <div class="role-pills">
+              @for (role of profile.roles; track role) {
+                <span class="badge" [class.badge-primary]="role === 'Student'" [class.badge-warning]="role === 'Instructor'" [class.badge-danger]="role.includes('Admin')">
+                  {{ role }}
+                </span>
+              }
+            </div>
+
+            <div class="profile-meta-list">
+              <div class="meta-item">
+                <span class="meta-label">Member Since</span>
+                <span class="meta-value">{{ profile.createdAt | date:'mediumDate' }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Account Status</span>
+                <span class="meta-value status-active">● Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Edit Sections -->
+        <div class="main-col">
+
+          <!-- Section 1: Personal Details -->
+          <div class="card settings-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="card-icon">👤</span>
+                <div>
+                  <h3>Personal Details</h3>
+                  <p>Update your display name and contact details</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              @if (profileSuccessMessage) {
+                <div class="success-banner">
+                  <span class="banner-icon">✓</span>
+                  <span>{{ profileSuccessMessage }}</span>
+                </div>
+              }
+
+              @if (profileErrorMessage) {
+                <div class="error-banner">
+                  <span class="banner-icon">⚠️</span>
+                  <span>{{ profileErrorMessage }}</span>
+                </div>
+              }
+
+              <form (ngSubmit)="onUpdateProfile()" class="settings-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input 
+                      type="text" 
+                      id="firstName" 
+                      [(ngModel)]="editForm.firstName" 
+                      name="firstName" 
+                      placeholder="Enter first name"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input 
+                      type="text" 
+                      id="lastName" 
+                      [(ngModel)]="editForm.lastName" 
+                      name="lastName" 
+                      placeholder="Enter last name"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="email">Email Address</label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    [value]="profile.email" 
+                    disabled 
+                    class="disabled-input"
+                  />
+                  <small class="field-hint">Email address cannot be changed for security reasons.</small>
+                </div>
+
+                <div class="form-group">
+                  <label for="phoneNumber">Phone Number (Optional)</label>
+                  <input 
+                    type="tel" 
+                    id="phoneNumber" 
+                    [(ngModel)]="editForm.phoneNumber" 
+                    name="phoneNumber" 
+                    placeholder="+1 (555) 000-0000"
+                  />
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn-primary" [disabled]="isUpdatingProfile">
+                    {{ isUpdatingProfile ? 'Saving Changes...' : 'Save Profile Changes' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Section 2: Security & Password -->
+          <div class="card settings-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="card-icon">🔒</span>
+                <div>
+                  <h3>Password &amp; Security</h3>
+                  <p>Manage your account password and security credentials</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              @if (passwordSuccessMessage) {
+                <div class="success-banner">
+                  <span class="banner-icon">✓</span>
+                  <span>{{ passwordSuccessMessage }}</span>
+                </div>
+              }
+
+              @if (passwordErrorMessage) {
+                <div class="error-banner">
+                  <span class="banner-icon">⚠️</span>
+                  <span>{{ passwordErrorMessage }}</span>
+                </div>
+              }
+
+              <form (ngSubmit)="onChangePassword()" class="settings-form">
+                <div class="form-group">
+                  <label for="currentPassword">Current Password</label>
+                  <input 
+                    type="password" 
+                    id="currentPassword" 
+                    [(ngModel)]="passwordForm.currentPassword" 
+                    name="currentPassword" 
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input 
+                      type="password" 
+                      id="newPassword" 
+                      [(ngModel)]="passwordForm.newPassword" 
+                      name="newPassword" 
+                      placeholder="At least 6 characters"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input 
+                      type="password" 
+                      id="confirmPassword" 
+                      [(ngModel)]="confirmPassword" 
+                      name="confirmPassword" 
+                      placeholder="Repeat new password"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn-primary" [disabled]="isChangingPassword">
+                    {{ isChangingPassword ? 'Updating Password...' : 'Update Password' }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    }
+
+  </div>
+</div>

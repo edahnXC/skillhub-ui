@@ -1,0 +1,341 @@
+<div class="permissions-studio-page">
+  
+  <!-- ── Top Header Banner ────────────────────────── -->
+  <div class="studio-header">
+    <div class="header-left">
+      <span class="badge-superadmin">🛡️ SuperAdmin Access Governance</span>
+      <h1>Dynamic Permission Management Studio</h1>
+      <p>Configure global role access matrices and tailor granular permissions for individual SubAdmins.</p>
+    </div>
+
+    <div class="header-actions">
+      @if (activeTab === 'matrix') {
+        <button type="button" class="btn-create-role" (click)="openCreateRoleModal()">
+          <span>+</span> Create Custom Role
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Tab Navigation ───────────────────────────── -->
+  <div class="studio-tabs-nav">
+    <button 
+      type="button" 
+      class="studio-tab-btn" 
+      [class.active]="activeTab === 'matrix'"
+      (click)="activeTab = 'matrix'">
+      📊 Global Role Matrix
+    </button>
+    <button 
+      type="button" 
+      class="studio-tab-btn" 
+      [class.active]="activeTab === 'subadmins'"
+      (click)="activeTab = 'subadmins'">
+      👥 Individual SubAdmin Permissions
+      <span class="subadmin-count-pill">{{ subAdmins.length }}</span>
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p>Loading permissions governance catalog...</p>
+    </div>
+  } @else {
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- TAB 1: GLOBAL ROLE MATRIX                      -->
+    <!-- ══════════════════════════════════════════════ -->
+    @if (activeTab === 'matrix') {
+      <!-- Unsaved Changes Floating Alert Bar -->
+      @if (hasUnsavedChanges) {
+        <div class="unsaved-alert-bar">
+          <div class="alert-info">
+            <span class="pulse-dot"></span>
+            <strong>Unsaved Changes Detected:</strong>
+            <span>Modified permissions across {{ modifiedRoles.length }} role(s).</span>
+          </div>
+          <div class="alert-actions">
+            <button type="button" class="btn-discard" (click)="discardChanges()" [disabled]="isSaving">
+              Discard
+            </button>
+            <button type="button" class="btn-save-all" (click)="saveAllChanges()" [disabled]="isSaving">
+              {{ isSaving ? 'Saving Changes...' : 'Save & Apply All' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Control Toolbar -->
+      <div class="studio-toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery" 
+            placeholder="Search permissions by token or description..." />
+        </div>
+
+        <div class="category-filter">
+          <label>Filter Category:</label>
+          <select [(ngModel)]="selectedCategory">
+            <option value="ALL">All Categories ({{ categories.length }})</option>
+            @for (cat of availableCategoryNames; track cat) {
+              <option [value]="cat">{{ cat }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Permission Matrix Table -->
+      <div class="matrix-card">
+        <div class="table-responsive">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th class="col-perm-details">Permissions &amp; Directives</th>
+                @for (role of roles; track role.id) {
+                  <th class="col-role-header" [class.is-superadmin]="role.name === 'SuperAdmin'">
+                    <div class="role-header-wrap">
+                      <span class="role-badge" [ngClass]="role.name.toLowerCase()">{{ role.name }}</span>
+                      <span class="role-user-count">{{ role.usersCount }} Users</span>
+                    </div>
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (cat of filteredCategories; track cat.categoryName) {
+                
+                <!-- Category Separator Header -->
+                <tr class="category-header-row">
+                  <td class="cat-title-cell">
+                    <div class="cat-label-wrap">
+                      <span class="cat-icon">📁</span>
+                      <span class="cat-name">{{ cat.categoryName }}</span>
+                      <span class="cat-count">({{ cat.permissions.length }})</span>
+                    </div>
+                  </td>
+                  @for (role of roles; track role.id) {
+                    <td class="cat-action-cell">
+                      @if (role.name !== 'SuperAdmin') {
+                        <div class="cat-quick-actions">
+                          <button type="button" class="btn-quick" (click)="selectAllForCategory(role, cat)" title="Grant all in this category">All</button>
+                          <span class="divider">/</span>
+                          <button type="button" class="btn-quick" (click)="deselectAllForCategory(role, cat)" title="Revoke all in this category">None</button>
+                        </div>
+                      }
+                    </td>
+                  }
+                </tr>
+
+                <!-- Category Permissions Rows -->
+                @for (perm of cat.permissions; track perm.id) {
+                  <tr class="permission-row">
+                    <td class="perm-info-cell">
+                      <div class="perm-token-name">{{ perm.name }}</div>
+                      <div class="perm-desc-text">{{ perm.description }}</div>
+                    </td>
+
+                    @for (role of roles; track role.id) {
+                      <td class="toggle-cell" [class.is-superadmin]="role.name === 'SuperAdmin'">
+                        @if (role.name === 'SuperAdmin') {
+                          <span class="locked-check" title="SuperAdmin always holds full platform authority">🔒 Yes</span>
+                        } @else {
+                          <label class="switch-toggle" [title]="'Toggle ' + perm.name + ' for ' + role.name">
+                            <input 
+                              type="checkbox" 
+                              [checked]="hasPermission(role.id, perm.id)"
+                              (change)="togglePermission(role, perm.id)" />
+                            <span class="slider"></span>
+                          </label>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+
+              } @empty {
+                <tr>
+                  <td [attr.colspan]="roles.length + 1" class="empty-matrix-state">
+                    No permissions found matching "{{ searchQuery }}".
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- TAB 2: INDIVIDUAL SUBADMIN PERMISSION MANAGER  -->
+    <!-- ══════════════════════════════════════════════ -->
+    @if (activeTab === 'subadmins') {
+      <div class="subadmins-manager-layout">
+        
+        <!-- Left Column: SubAdmin List -->
+        <div class="subadmins-list-panel">
+          <div class="panel-top-bar">
+            <h3>SubAdmin Accounts ({{ filteredSubAdmins.length }})</h3>
+            <div class="subadmin-search">
+              <input 
+                type="text" 
+                [(ngModel)]="subAdminSearchQuery" 
+                placeholder="Filter SubAdmin by name or email..." />
+            </div>
+          </div>
+
+          <div class="subadmin-cards-list">
+            @for (sub of filteredSubAdmins; track sub.id) {
+              <div 
+                class="subadmin-card" 
+                [class.selected]="selectedSubAdmin?.id === sub.id"
+                (click)="selectSubAdmin(sub)">
+                <div class="sub-avatar">
+                  {{ sub.firstName.charAt(0).toUpperCase() }}
+                </div>
+                <div class="sub-info">
+                  <div class="sub-name">{{ sub.firstName }} {{ sub.lastName }}</div>
+                  <div class="sub-email">{{ sub.email }}</div>
+                  <div class="sub-meta">
+                    <span class="perm-count-badge">{{ sub.configuredPermissionIds.length }} Custom Permissions</span>
+                  </div>
+                </div>
+                <span class="chevron-right">›</span>
+              </div>
+            } @empty {
+              <div class="empty-subadmins">
+                <p>No SubAdmin accounts found.</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Right Column: SubAdmin Custom Permission Editor -->
+        <div class="subadmin-editor-panel">
+          @if (selectedSubAdmin) {
+            <div class="editor-header">
+              <div class="editor-title-wrap">
+                <span class="subadmin-pill">Custom SubAdmin Access</span>
+                <h2>{{ selectedSubAdmin.firstName }} {{ selectedSubAdmin.lastName }}</h2>
+                <p class="editor-email">{{ selectedSubAdmin.email }}</p>
+              </div>
+
+              <div class="editor-header-actions">
+                <span class="active-count-tag">{{ workingSubAdminPermIds.size }} Granted</span>
+                <button 
+                  type="button" 
+                  class="btn-save-subadmin" 
+                  [disabled]="isSavingSubAdmin || !hasSubAdminChanges"
+                  (click)="saveSubAdminSpecificPermissions()">
+                  {{ isSavingSubAdmin ? 'Saving...' : 'Save Permissions' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Selection Bar -->
+            <div class="quick-selection-bar">
+              <span>Quick Action:</span>
+              <button type="button" class="btn-quick-opt" (click)="selectAllSubAdmin()">Select All</button>
+              <button type="button" class="btn-quick-opt" (click)="clearAllSubAdmin()">Clear All</button>
+            </div>
+
+            <!-- Categorized Checklists -->
+            <div class="editor-categories-scroll">
+              @for (cat of categories; track cat.categoryName) {
+                <div class="editor-category-card">
+                  <div class="editor-cat-header">
+                    <span class="cat-name">{{ cat.categoryName }}</span>
+                    <div class="cat-quick-btns">
+                      <button type="button" (click)="selectAllSubAdminCategory(cat)">All</button>
+                      <span>/</span>
+                      <button type="button" (click)="deselectAllSubAdminCategory(cat)">None</button>
+                    </div>
+                  </div>
+
+                  <div class="editor-perms-grid">
+                    @for (perm of cat.permissions; track perm.id) {
+                      <label 
+                        class="editor-perm-item" 
+                        [class.checked]="isSubAdminPermSelected(perm.id)">
+                        <input 
+                          type="checkbox" 
+                          [checked]="isSubAdminPermSelected(perm.id)"
+                          (change)="toggleSubAdminPerm(perm.id)" />
+                        <div class="perm-text-wrap">
+                          <span class="perm-title">{{ perm.name }}</span>
+                          <span class="perm-subtitle">{{ perm.description }}</span>
+                        </div>
+                      </label>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+          } @else {
+            <div class="editor-empty-state">
+              <div class="empty-icon">👈</div>
+              <h3>Select a SubAdmin</h3>
+              <p>Choose any SubAdmin from the list on the left to inspect, grant, or revoke their specific administrative capabilities.</p>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+  }
+
+</div>
+
+<!-- ── Create Role Modal ────────────────────────── -->
+@if (showCreateRoleModal) {
+  <div class="modal-backdrop" (click)="closeCreateRoleModal()">
+    <div class="role-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Create New Administrative Role</h3>
+        <button type="button" class="btn-close" (click)="closeCreateRoleModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="newRoleName">Role Name</label>
+          <input 
+            type="text" 
+            id="newRoleName" 
+            [(ngModel)]="newRoleName" 
+            placeholder="e.g. ContentModerator, FinanceAuditor" />
+        </div>
+
+        <div class="form-group">
+          <label for="newRoleDescription">Role Description</label>
+          <textarea 
+            id="newRoleDescription" 
+            rows="3" 
+            [(ngModel)]="newRoleDescription" 
+            placeholder="Describe the duties and intended access scope of this role..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeCreateRoleModal()">Cancel</button>
+        <button 
+          type="button" 
+          class="btn-primary" 
+          [disabled]="!newRoleName.trim() || isCreatingRole" 
+          (click)="createRole()">
+          {{ isCreatingRole ? 'Creating Role...' : 'Create Role' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Toast Feedback ────────────────────────────── -->
+@if (showToast) {
+  <div class="toast-notification">
+    {{ toastMessage }}
+  </div>
+}

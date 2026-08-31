@@ -1,0 +1,49 @@
+<div class="my-learning-container">
+  <div class="header-section">
+    <h1>My Learning</h1>
+    <p>Track your enrolled courses, video progress, and continue your learning journey.</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p>Loading your enrolled courses...</p>
+    </div>
+  } @else if (error) {
+    <div class="state-container error-state">
+      <span class="state-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="loadEnrollments()">Retry</button>
+    </div>
+  } @else {
+    @if (enrolledCourses.length > 0) {
+      <div class="courses-grid">
+        @for (course of enrolledCourses; track course.id) {
+          <div class="course-card card-hover">
+            <div class="card-image">
+              <img [src]="course.thumbnailUrl || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80'" [alt]="course.title" [title]="course.title" />
+            </div>
+            <div class="card-content">
+              <span class="badge badge-primary">{{ course.categoryName || 'General' }}</span>
+              <h3 class="course-title">{{ course.title }}</h3>
+              <p class="instructor-name">By {{ course.instructorName || 'Expert Instructor' }}</p>
+              
+              <div class="card-footer">
+                <a [routerLink]="['/learn', course.id]" class="btn-primary w-100 text-center" style="font-weight: 700;">
+                  ▶ Resume Learning
+                </a>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="state-container empty-state">
+        <div class="empty-illustration">🎒</div>
+        <h2>No Enrolled Courses Yet</h2>
+        <p>Your learning library is currently empty. Explore our catalog of expert-led courses to start building your skills today!</p>
+        <a routerLink="/courses" class="btn-primary btn-lg">Explore Catalog →</a>
+      </div>
+    }
+  }
+</div>

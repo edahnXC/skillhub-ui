@@ -1,0 +1,386 @@
+<div class="create-page">
+  <div class="container">
+
+    <div class="page-header">
+      <a routerLink="/courses" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to Courses
+      </a>
+      <div class="header-content-row">
+        <div>
+          <h1>Edit Course & Curriculum</h1>
+          <p>Manage your course settings, pricing, and video lecture curriculum.</p>
+        </div>
+        @if (courseId) {
+          <a [routerLink]="['/courses', courseId]" class="btn-secondary btn-preview">
+            👁️ Preview Course
+          </a>
+        }
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'details'"
+        (click)="setTab('details')">
+        📝 Course Details
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'curriculum'"
+        (click)="setTab('curriculum')">
+        📚 Curriculum Builder
+        @if (sections.length > 0) {
+          <span class="tab-badge">{{ sections.length }}</span>
+        }
+      </button>
+    </div>
+
+    @if (isLoading) {
+      <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading course information...</p>
+      </div>
+    } @else if (error && !courseForm.value.title) {
+      <div class="state-container error-state">
+        <p>{{ error }}</p>
+      </div>
+    } @else {
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- TAB 1: COURSE DETAILS                                  -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      @if (activeTab === 'details') {
+        <div class="create-card">
+          @if (successMessage) {
+            <div class="alert-success">
+              ✅ {{ successMessage }}
+            </div>
+          }
+          @if (error) {
+            <div class="alert-error">
+              ⚠️ {{ error }}
+            </div>
+          }
+
+          <form [formGroup]="courseForm" (ngSubmit)="onSubmit()" class="auth-form">
+
+            <!-- Basic Info -->
+            <div class="form-section-label">
+              <span class="form-section-icon">📝</span>
+              Basic Information
+            </div>
+
+            <div class="form-group">
+              <label for="title">Course Title <span class="field-required">*</span></label>
+              <input
+                id="title"
+                type="text"
+                formControlName="title"
+                placeholder="e.g. Complete Full-Stack Web Development" />
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description <span class="field-required">*</span></label>
+              <textarea
+                id="description"
+                rows="5"
+                formControlName="description"
+                placeholder="Describe what students will master in this course...">
+              </textarea>
+            </div>
+
+            <!-- Pricing -->
+            <div class="form-section-label">
+              <span class="form-section-icon">💰</span>
+              Pricing (INR)
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="price">Regular Price (₹) <span class="field-required">*</span></label>
+                <input
+                  id="price"
+                  type="number"
+                  formControlName="price"
+                  placeholder="0"
+                  min="0"
+                  step="1" />
+              </div>
+              <div class="form-group">
+                <label for="discountPrice">Discount Price (₹)</label>
+                <input
+                  id="discountPrice"
+                  type="number"
+                  formControlName="discountPrice"
+                  placeholder="Optional discount price"
+                  min="0"
+                  step="1" />
+              </div>
+            </div>
+
+            <!-- Media & Category -->
+            <div class="form-section-label">
+              <span class="form-section-icon">🖼️</span>
+              Media &amp; Classification
+            </div>
+
+            <div class="form-group">
+              <label for="thumbnailUrl">Course Thumbnail Image</label>
+              <input
+                id="thumbnailUrl"
+                type="file"
+                accept="image/*"
+                (change)="onFileSelected($event)" />
+              
+              @if (isUploading) {
+                <span class="field-hint uploading">Uploading image asset...</span>
+              } @else if (imagePreview) {
+                <div class="image-preview">
+                  <img [src]="imagePreview" alt="Thumbnail Preview" title="Thumbnail Preview" />
+                </div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="categoryId">Category <span class="field-required">*</span></label>
+              <select
+                id="categoryId"
+                formControlName="categoryId">
+                <option value="" disabled selected>Select a category</option>
+                @for (category of categories; track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
+                }
+              </select>
+            </div>
+            
+            <div class="checkbox-group">
+              <input type="checkbox" id="isPublished" formControlName="isPublished">
+              <label for="isPublished">Publish Course (Make visible in public catalog)</label>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+              <a [routerLink]="['/courses', courseId]" class="btn-secondary">Cancel</a>
+              <button
+                class="btn-primary btn-submit"
+                type="submit"
+                [disabled]="courseForm.invalid || isSubmitting">
+                {{ isSubmitting ? 'Saving...' : 'Save Course Details' }}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- TAB 2: CURRICULUM BUILDER                              -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      @if (activeTab === 'curriculum') {
+        <div class="curriculum-builder-container">
+
+          <!-- Add Section Card -->
+          <div class="builder-add-section-card">
+            <h4>➕ Add New Section / Module</h4>
+            <div class="add-section-input-group">
+              <input
+                type="text"
+                [(ngModel)]="newSectionTitle"
+                placeholder="e.g. Module 4: Cloud Deployment & CI/CD Pipelines"
+                (keyup.enter)="addSection()" />
+              <button
+                type="button"
+                class="btn-primary"
+                (click)="addSection()"
+                [disabled]="!newSectionTitle.trim() || isAddingSection">
+                {{ isAddingSection ? 'Adding...' : 'Add Section' }}
+              </button>
+            </div>
+          </div>
+
+          @if (isLoadingCurriculum) {
+            <div class="state-container">
+              <div class="spinner"></div>
+              <p>Loading curriculum...</p>
+            </div>
+          } @else if (sections.length > 0) {
+            <div class="sections-builder-list">
+              @for (section of sections; track section.id; let sIdx = $index) {
+                <div class="section-card">
+                  
+                  <!-- Section Header -->
+                  <div class="section-header-bar">
+                    <div class="section-info">
+                      <span class="section-badge">Section {{ sIdx + 1 }}</span>
+                      <h3 class="section-heading">{{ section.title }}</h3>
+                      <span class="lecture-count-tag">
+                        {{ section.lessons ? section.lessons.length : 0 }} {{ (section.lessons.length === 1) ? 'lecture' : 'lectures' }}
+                      </span>
+                    </div>
+                    <div class="section-actions">
+                      <button
+                        type="button"
+                        class="btn-sm btn-outline-primary"
+                        (click)="openAddLesson(section.id)">
+                        + Add Lecture
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-sm btn-outline-danger"
+                        (click)="deleteSection(section.id)"
+                        title="Delete this section">
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Add Lesson Form inside Section -->
+                  @if (activeAddingLessonSectionId === section.id) {
+                    <div class="add-lesson-panel">
+                      <h4>New Lecture in "{{ section.title }}"</h4>
+                      <div class="lesson-form-grid">
+                        <div class="form-group full-width">
+                          <label>Lecture Title <span class="field-required">*</span></label>
+                          <input
+                            type="text"
+                            [(ngModel)]="newLessonTitle"
+                            placeholder="e.g. Setting up Docker and K8s Cluster" />
+                        </div>
+                        <div class="form-group">
+                          <label>Video Embed URL / Stream Link</label>
+                          <input
+                            type="text"
+                            [(ngModel)]="newLessonVideoUrl"
+                            placeholder="e.g. https://www.youtube.com/embed/..." />
+                        </div>
+                        <div class="form-group">
+                          <label>Duration (Minutes)</label>
+                          <input
+                            type="number"
+                            [(ngModel)]="newLessonDuration"
+                            min="1"
+                            placeholder="15" />
+                        </div>
+                      </div>
+                      <div class="panel-actions">
+                        <button type="button" class="btn-secondary btn-sm" (click)="cancelAddLesson()">Cancel</button>
+                        <button
+                          type="button"
+                          class="btn-primary btn-sm"
+                          [disabled]="!newLessonTitle.trim() || isAddingLesson"
+                          (click)="addLesson(section.id)">
+                          {{ isAddingLesson ? 'Saving Lecture...' : 'Save Lecture' }}
+                        </button>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Lessons List inside Section -->
+                  <div class="lessons-container">
+                    @if (section.lessons && section.lessons.length > 0) {
+                      <div class="lessons-builder-items">
+                        @for (lesson of section.lessons; track lesson.id; let lIdx = $index) {
+                          <div class="lesson-builder-card">
+                            <div class="lesson-header-row">
+                              <div class="lesson-left">
+                                <span class="play-icon">▶</span>
+                                <span class="lesson-num">{{ lIdx + 1 }}.</span>
+                                <span class="lesson-name">{{ lesson.title }}</span>
+                                <span class="duration-tag">{{ lesson.durationMinutes }} min</span>
+                              </div>
+                              <div class="lesson-right-actions">
+                                <button
+                                  type="button"
+                                  class="btn-text-sm"
+                                  (click)="openAddResource(lesson.id)">
+                                  📎 Attach Resource
+                                </button>
+                                <button
+                                  type="button"
+                                  class="btn-icon-danger"
+                                  (click)="deleteLesson(section.id, lesson.id)"
+                                  title="Delete lecture">
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+
+                            <!-- Attached Resources List -->
+                            @if (lesson.resources && lesson.resources.length > 0) {
+                              <div class="resources-pills">
+                                @for (res of lesson.resources; track res.id) {
+                                  <div class="resource-pill">
+                                    <span class="file-icon">📄</span>
+                                    <a [href]="res.fileUrl" target="_blank" class="resource-link">{{ res.fileName }}</a>
+                                    <button
+                                      type="button"
+                                      class="btn-remove-res"
+                                      (click)="deleteResource(section.id, lesson.id, res.id)"
+                                      title="Remove file">
+                                      ✕
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                            }
+
+                            <!-- Add Resource Panel -->
+                            @if (activeAddingResourceLessonId === lesson.id) {
+                              <div class="add-resource-panel">
+                                <div class="resource-inputs">
+                                  <input
+                                    type="text"
+                                    [(ngModel)]="newResourceFileName"
+                                    placeholder="Resource File Name (e.g. Chapter-1-Notes.pdf)" />
+                                  <input
+                                    type="text"
+                                    [(ngModel)]="newResourceFileUrl"
+                                    placeholder="Resource URL / Download Link" />
+                                </div>
+                                <div class="resource-actions">
+                                  <button type="button" class="btn-text-sm" (click)="cancelAddResource()">Cancel</button>
+                                  <button
+                                    type="button"
+                                    class="btn-primary btn-sm"
+                                    [disabled]="!newResourceFileName.trim() || !newResourceFileUrl.trim() || isAddingResource"
+                                    (click)="addResource(section.id, lesson.id)">
+                                    {{ isAddingResource ? 'Attaching...' : 'Attach' }}
+                                  </button>
+                                </div>
+                              </div>
+                            }
+
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <div class="empty-lessons-box">
+                        <p>No lectures in this section yet. Click "+ Add Lecture" above to add videos.</p>
+                      </div>
+                    }
+                  </div>
+
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="state-container empty-curriculum-state">
+              <div class="empty-icon">📚</div>
+              <h3>No Sections Created Yet</h3>
+              <p>Start organizing your course curriculum by creating your first module/section above.</p>
+            </div>
+          }
+
+        </div>
+      }
+
+    }
+  </div>
+</div>
