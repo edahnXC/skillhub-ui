@@ -71,10 +71,10 @@
     @if (!isLoading && !error && instructors.length > 0) {
       <div class="instructors-grid">
         @for (instructor of instructors; track instructor.id) {
-          <article class="instructor-card" [routerLink]="['/instructors', instructor.id]" style="cursor: pointer;">
+          <article class="instructor-card clickable" [routerLink]="['/instructors', instructor.id]">
             <div class="instructor-avatar" [style.background]="getGradient(instructor.id)">
               @if (instructor.profileImageUrl) {
-                <img [src]="instructor.profileImageUrl" [alt]="instructor.firstName + ' ' + instructor.lastName" [title]="instructor.firstName + ' ' + instructor.lastName" />
+                <img [src]="instructor.profileImageUrl" [alt]="(instructor.firstName + ' ' + instructor.lastName) || 'Instructor profile'" [title]="(instructor.firstName + ' ' + instructor.lastName) || 'Instructor profile'" />
               } @else {
                 <span class="avatar-initials">{{ getInitials(instructor.firstName, instructor.lastName) }}</span>
               }

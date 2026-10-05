@@ -89,11 +89,11 @@
             (change)="onFileSelected($event)" />
           
           @if (isUploading) {
-            <span class="field-hint" style="color: #667eea; font-weight: bold;">Uploading image...</span>
+            <span class="field-hint upload-active">Uploading image...</span>
           } @else if (thumbnailPreviewUrl) {
-            <div class="image-preview" style="margin-top: 10px;">
-              <img [src]="thumbnailPreviewUrl" alt="Thumbnail Preview" style="max-width: 200px; border-radius: 8px;" />
-              <span class="field-hint" style="display: block; margin-top: 5px;">Image uploaded successfully!</span>
+            <div class="image-preview">
+              <img [src]="thumbnailPreviewUrl" alt="Thumbnail Preview" class="preview-img" />
+              <span class="field-hint upload-success">Image uploaded successfully!</span>
             </div>
           } @else {
             <span class="field-hint">Optional — a 16:9 image works best (e.g. 1280×720 px)</span>

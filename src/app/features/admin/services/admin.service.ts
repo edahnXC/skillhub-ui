@@ -18,6 +18,7 @@ export interface AdminCourseDto {
   id: number;
   title: string;
   price: number;
+  discountPrice?: number | null;
   isPublished: boolean;
   createdAt: string;
   instructorName: string;

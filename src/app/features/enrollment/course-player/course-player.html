@@ -65,6 +65,7 @@
           @if (safeVideoUrl) {
             <iframe
               [src]="safeVideoUrl"
+              [title]="activeLesson?.title || 'Lecture Video Player'"
               class="video-iframe"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen>

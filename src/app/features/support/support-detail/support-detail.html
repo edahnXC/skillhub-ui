@@ -1,0 +1,145 @@
+<div class="ticket-detail-page">
+  <div class="container">
+    
+    <!-- ── Top Nav ──────────────────────────────── -->
+    <div class="nav-bar">
+      <a routerLink="/support" class="back-link">
+        <span>&larr;</span> Back to All Tickets
+      </a>
+
+      @if (ticket && ticket.status !== 'Resolved' && ticket.status !== 'Closed') {
+        <button 
+          type="button" 
+          class="btn-resolve" 
+          (click)="markResolved()"
+          [disabled]="isResolving">
+          {{ isResolving ? 'Resolving...' : '✓ Mark as Resolved' }}
+        </button>
+      }
+    </div>
+
+    @if (isLoading) {
+      <div class="state-container">
+        <div class="spinner"></div>
+        <p>Loading ticket conversation thread...</p>
+      </div>
+    } @else if (error || !ticket) {
+      <div class="state-container error-state">
+        <span class="state-icon">⚠️</span>
+        <h3>Could not load ticket</h3>
+        <p>{{ error }}</p>
+        <a routerLink="/support" class="btn-primary">Return to Support</a>
+      </div>
+    } @else {
+
+      <!-- ── Ticket Hero Header ───────────────────── -->
+      <div class="ticket-header-card card-shadow">
+        <div class="header-top">
+          <div class="ticket-ref-group">
+            <span class="ticket-num">{{ ticket.ticketNumber }}</span>
+            <span class="category-pill">{{ ticket.category }}</span>
+          </div>
+
+          <div class="badges-group">
+            <span class="priority-pill" [ngClass]="getPriorityClass(ticket.priority)">
+              Priority: {{ ticket.priority }}
+            </span>
+            <span class="status-pill" [ngClass]="getStatusClass(ticket.status)">
+              Status: {{ formatStatusLabel(ticket.status) }}
+            </span>
+          </div>
+        </div>
+
+        <h1 class="ticket-title">{{ ticket.subject }}</h1>
+
+        <div class="header-meta">
+          <span class="meta-item">
+            <strong>Opened:</strong> {{ ticket.createdAt | date:'medium' }}
+          </span>
+          @if (ticket.assignedAdminName) {
+            <span class="meta-item">
+              <strong>Assigned Staff:</strong> {{ ticket.assignedAdminName }}
+            </span>
+          }
+          @if (ticket.resolvedAt) {
+            <span class="meta-item text-success">
+              <strong>Resolved:</strong> {{ ticket.resolvedAt | date:'medium' }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- ── Conversation Thread ──────────────────── -->
+      <div class="conversation-section">
+        <h2>Conversation History ({{ ticket.messages.length }})</h2>
+
+        <div class="messages-timeline">
+          @for (msg of ticket.messages; track msg.id; let idx = $index) {
+            <div 
+              class="message-bubble-row"
+              [class.own-message]="msg.senderUserId === currentUserId"
+              [class.staff-message]="msg.senderUserId !== currentUserId">
+
+              <div class="message-card">
+                
+                <div class="message-header">
+                  <div class="sender-info">
+                    <span class="avatar-icon">
+                      {{ msg.senderUserId === currentUserId ? '👤' : '🛡️' }}
+                    </span>
+                    <span class="sender-name">{{ msg.senderName }}</span>
+                    @if (msg.senderUserId !== currentUserId) {
+                      <span class="role-badge">Support Staff</span>
+                    }
+                  </div>
+                  <span class="message-time">{{ msg.createdAt | date:'short' }}</span>
+                </div>
+
+                <div class="message-body">
+                  <p>{{ msg.messageText }}</p>
+                </div>
+
+                @if (msg.attachmentUrl) {
+                  <div class="message-attachment">
+                    <span>📎 Attachment:</span>
+                    <a [href]="msg.attachmentUrl" target="_blank" rel="noopener">View File</a>
+                  </div>
+                }
+
+              </div>
+
+            </div>
+          }
+        </div>
+
+        <!-- ── Reply Composer ─────────────────────── -->
+        @if (ticket.status !== 'Closed') {
+          <div class="reply-card card-shadow">
+            <h3>Add a Response</h3>
+            <textarea 
+              rows="4" 
+              placeholder="Type your message or response to support staff here..."
+              [(ngModel)]="newMessage"></textarea>
+            
+            <div class="reply-actions">
+              <button 
+                type="button" 
+                class="btn-send"
+                (click)="sendMessage()"
+                [disabled]="isSending || !newMessage.trim()">
+                {{ isSending ? 'Sending...' : '📨 Send Response' }}
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="closed-notice">
+            <span>🔒</span> This support ticket has been closed and archived. If you have an issue, please open a new support inquiry.
+          </div>
+        }
+
+      </div>
+
+    }
+
+  </div>
+</div>

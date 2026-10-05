@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { ProfileService } from '../services/profile.service';
 import { UserProfile, UpdateProfileRequest, ChangePasswordRequest } from '../models/profile.model';
 
 @Component({
   selector: 'app-profile-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './profile-settings.html',
   styleUrl: './profile-settings.scss'
 })

@@ -2,6 +2,8 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
 
+> 📘 **Comprehensive Project Architecture & Engineering Guide**: For an in-depth understanding of the platform modules (Quizzes, Enrollments, Student Learning Player, Course Reviews, and the upcoming Support Ticketing & Transactional Mailing Engine), see [read.md](read.md).
+
 ## Development server
 
 To start a local development server, run:

@@ -1,0 +1,326 @@
+.create-ticket-page {
+  padding: 2.5rem 1.5rem 5rem;
+  background: #f8fafc;
+  min-height: calc(100vh - 72px);
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #4f46e5;
+  }
+}
+
+.page-title-section {
+  margin-bottom: 2.5rem;
+
+  h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    color: #64748b;
+    font-size: 1.05rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 2.5rem;
+  align-items: start;
+
+  @media (max-width: 950px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Form Card ────────────────────────────────── */
+.ticket-form {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2.5rem;
+
+  @media (max-width: 600px) {
+    padding: 1.5rem;
+  }
+
+  .alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .form-section {
+    margin-bottom: 2rem;
+
+    .section-label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.75rem;
+
+      .required { color: #ef4444; }
+    }
+  }
+
+  .form-group {
+    margin-bottom: 1.75rem;
+
+    label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+
+      .required { color: #ef4444; }
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: #0f172a;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.15s ease;
+
+      &:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+      }
+    }
+
+    textarea {
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .field-hint {
+      display: block;
+      font-size: 0.825rem;
+      color: #64748b;
+      margin-top: 0.4rem;
+    }
+  }
+}
+
+/* ── Category Cards ───────────────────────────── */
+.category-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+
+  .category-option-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: #cbd5e1;
+      background: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    &.selected {
+      border-color: #6366f1;
+      background: #eef2ff;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+
+      .cat-title {
+        color: #4f46e5;
+      }
+    }
+
+    .cat-icon {
+      font-size: 1.35rem;
+      line-height: 1;
+      margin-top: 0.1rem;
+    }
+
+    .cat-info {
+      display: flex;
+      flex-direction: column;
+
+      .cat-title {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .cat-desc {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.2rem;
+      }
+    }
+  }
+}
+
+/* ── Priority Selector ────────────────────────── */
+.priority-selector {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  .priority-chip {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.65rem 1rem;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: #cbd5e1;
+      background: #ffffff;
+    }
+
+    &.selected {
+      border-color: #4f46e5;
+      background: #4f46e5;
+      color: #ffffff;
+    }
+
+    &.selected.urgent {
+      border-color: #dc2626;
+      background: #dc2626;
+      color: #ffffff;
+    }
+  }
+}
+
+/* ── Actions ──────────────────────────────────── */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f1f5f9;
+
+  .btn-cancel {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+
+    &:hover {
+      color: #0f172a;
+    }
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #ffffff;
+    border: none;
+    padding: 0.85rem 1.75rem;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+/* ── Sidebar ──────────────────────────────────── */
+.support-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .sidebar-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.5rem;
+
+    .sidebar-icon {
+      font-size: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 0.75rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+      color: #64748b;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .tips-list {
+      margin: 0;
+      padding-left: 1.25rem;
+      color: #475569;
+      font-size: 0.875rem;
+      line-height: 1.6;
+
+      li {
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
+}

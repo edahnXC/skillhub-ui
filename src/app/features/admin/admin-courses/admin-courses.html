@@ -52,7 +52,14 @@
               <td>
                 <span class="category-tag">{{ course.categoryName }}</span>
               </td>
-              <td>₹{{ course.price }}</td>
+              <td>
+                @if (course.discountPrice !== null && course.discountPrice !== undefined && course.discountPrice < course.price) {
+                  <div><strong>₹{{ course.discountPrice | number }}</strong></div>
+                  <div style="font-size: 11px; color: #9ca3af; text-decoration: line-through;">₹{{ course.price | number }}</div>
+                } @else {
+                  <div>{{ course.price === 0 ? 'Free' : ('₹' + (course.price | number)) }}</div>
+                }
+              </td>
               <td>
                 <span class="status-badge" [class.published]="course.isPublished" [class.draft]="!course.isPublished">
                   {{ course.isPublished ? '● Published' : '○ Draft / Pending' }}

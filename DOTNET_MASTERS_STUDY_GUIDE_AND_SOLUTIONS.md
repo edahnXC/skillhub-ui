@@ -19,7 +19,7 @@ Every concept in this curriculum is presented in a rigorous 4-step framework:
 
 ---
 
-# Table of Contents
+## Table of Contents
 
 - [PART I: EXAM PAPER SOLUTIONS & ARCHITECTURAL FOUNDATIONS](#part-i-exam-paper-solutions)
   - [Question 1: Lambda Expression for Average](#question-1-lambda-expression-for-average)
@@ -37,7 +37,7 @@ Every concept in this curriculum is presented in a rigorous 4-step framework:
 
 ---
 
-# PART I: EXAM PAPER SOLUTIONS
+## PART I: EXAM PAPER SOLUTIONS
 
 ---
 
@@ -254,7 +254,7 @@ class Program
 
 ## Exam Annotations: Memory Allocation & Garbage Collection
 
-```
+```text
    THREAD STACK (LIFO Execution)             MANAGED HEAP (GC Controlled)
 +---------------------------------+       +-------------------------------------+
 | int age = 25 (Inline Value)     |       | Person Object                       |
@@ -323,7 +323,7 @@ Microsoft initiated **Project Lightning (Next Generation Windows Services)**, wh
 
 ## 1.3 .NET Framework vs. .NET Core vs. Modern .NET
 
-```
+```text
 .NET Framework (2002-2019)           .NET Core (2016-2020)           .NET 5, 6, 7, 8, 9 (Modern .NET)
 - Windows Only                       - Cross-Platform (Linux/Mac)    - Unified Single .NET Platform
 - Monolithic Machine-Wide Install    - Side-by-Side Self-Contained   - High-Performance RyuJIT + PGO
@@ -342,7 +342,7 @@ Microsoft initiated **Project Lightning (Next Generation Windows Services)**, wh
 
 ---
 
-# UNIT 2: The Common Language Runtime (CLR) & Execution Model
+## UNIT 2: The Common Language Runtime (CLR) & Execution Model
 
 ---
 
@@ -350,7 +350,7 @@ Microsoft initiated **Project Lightning (Next Generation Windows Services)**, wh
 
 A .NET application is organized in a strict hierarchy:
 
-```
+```text
 [ OS Process ]
    └── [ AppDomain / AssemblyLoadContext ]
           └── [ Assemblies (.dll, .exe) ]
@@ -633,9 +633,9 @@ class StringMemoryDemo
 
 ---
 
-## 3.5 Object-Oriented Programming (OOP) in C #
+## 3.5 Object-Oriented Programming (OOP) in C#
 
-### 1. Four Pillars of OOP in C #
+### 1. Four Pillars of OOP in C#
 
 1. **Encapsulation:** Protecting internal state via properties and access modifiers (`private`, `protected`, `public`, `internal`).
 2. **Inheritance:** Deriving new classes from a base class (`class Derived : Base`).
@@ -879,13 +879,13 @@ class Program
 
 ---
 
-# UNIT 4: ASP.NET Core MVC & Web Architecture
+## UNIT 4: ASP.NET Core MVC & Web Architecture
 
 ---
 
 ## 4.1 Fundamentals of MVC (Model-View-Controller) Architecture
 
-```
+```text
 [ Browser Client ]
        │
        ▼ (HTTP GET /courses)
@@ -1002,7 +1002,7 @@ public class HomeController : Controller
 1. Chooses whether to pass the request to the next component in the pipeline.
 2. Can perform work before and after the next component is invoked.
 
-```
+```text
 HTTP Request ──► [ Middleware 1 (Logging) ]
                     └──► [ Middleware 2 (Auth) ]
                             └──► [ Middleware 3 (Endpoint/MVC) ]
@@ -1192,7 +1192,7 @@ public class AlertTagHelper : TagHelper
 
 ---
 
-# Summary & Quick Exam Review Checklist
+## Summary & Quick Exam Review Checklist
 
 | Unit | Core Topics to Master |
 | :--- | :--- |

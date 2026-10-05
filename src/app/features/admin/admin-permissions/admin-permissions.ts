@@ -36,12 +36,6 @@ export class AdminPermissions implements OnInit {
   isSaving = false;
   searchQuery = '';
   selectedCategory = 'ALL';
-  
-  // Create Role Modal
-  showCreateRoleModal = false;
-  newRoleName = '';
-  newRoleDescription = '';
-  isCreatingRole = false;
 
   // Toast feedback
   toastMessage = '';
@@ -307,38 +301,7 @@ export class AdminPermissions implements OnInit {
     });
   }
 
-  openCreateRoleModal(): void {
-    this.newRoleName = '';
-    this.newRoleDescription = '';
-    this.showCreateRoleModal = true;
-  }
 
-  closeCreateRoleModal(): void {
-    this.showCreateRoleModal = false;
-  }
-
-  createRole(): void {
-    if (!this.newRoleName.trim() || this.isCreatingRole) return;
-
-    this.isCreatingRole = true;
-    this.permissionService.createRole({
-      name: this.newRoleName.trim(),
-      description: this.newRoleDescription.trim(),
-      permissionIds: []
-    }).subscribe({
-      next: (newRole) => {
-        this.isCreatingRole = false;
-        this.showCreateRoleModal = false;
-        this.triggerToast(`Role '${newRole.name}' created successfully!`);
-        this.loadMatrix();
-      },
-      error: (err) => {
-        console.error('Failed to create role', err);
-        this.isCreatingRole = false;
-        alert(err.error?.message || 'Failed to create role.');
-      }
-    });
-  }
 
   triggerToast(msg: string): void {
     this.toastMessage = msg;

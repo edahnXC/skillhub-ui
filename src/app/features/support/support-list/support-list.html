@@ -1,0 +1,173 @@
+<div class="support-page-container">
+  
+  <!-- ── Header Banner ────────────────────────────── -->
+  <div class="support-header">
+    <div class="header-content">
+      <div class="header-badge">💬 Student & Instructor Support</div>
+      <h1>Help & Support Center</h1>
+      <p>Have questions about your courses, billing, or technical issues? We're here to help you succeed.</p>
+    </div>
+    <div class="header-action">
+      <a routerLink="/support/new" class="btn-primary btn-new-ticket">
+        <span>+</span> Open New Support Ticket
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Quick Metrics Bar ────────────────────────── -->
+  <div class="metrics-grid">
+    <div class="metric-card" (click)="setFilter('ALL')" [class.active-card]="activeFilter === 'ALL'">
+      <div class="metric-icon total">📋</div>
+      <div class="metric-info">
+        <span class="metric-count">{{ tickets.length }}</span>
+        <span class="metric-label">Total Tickets</span>
+      </div>
+    </div>
+
+    <div class="metric-card" (click)="setFilter('Open')" [class.active-card]="activeFilter === 'Open'">
+      <div class="metric-icon open">⏳</div>
+      <div class="metric-info">
+        <span class="metric-count">{{ getCountByStatus('Open') }}</span>
+        <span class="metric-label">Awaiting Staff</span>
+      </div>
+    </div>
+
+    <div class="metric-card" (click)="setFilter('InProgress')" [class.active-card]="activeFilter === 'InProgress'">
+      <div class="metric-icon inprogress">⚡</div>
+      <div class="metric-info">
+        <span class="metric-count">{{ getCountByStatus('InProgress') }}</span>
+        <span class="metric-label">In Progress</span>
+      </div>
+    </div>
+
+    <div class="metric-card" (click)="setFilter('Resolved')" [class.active-card]="activeFilter === 'Resolved'">
+      <div class="metric-icon resolved">✅</div>
+      <div class="metric-info">
+        <span class="metric-count">{{ getCountByStatus('Resolved') }}</span>
+        <span class="metric-label">Resolved</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Controls & Filter Tabs ───────────────────── -->
+  <div class="controls-bar">
+    <div class="filter-tabs">
+      <button 
+        type="button" 
+        class="tab-btn" 
+        [class.active]="activeFilter === 'ALL'" 
+        (click)="setFilter('ALL')">
+        All ({{ tickets.length }})
+      </button>
+      <button 
+        type="button" 
+        class="tab-btn" 
+        [class.active]="activeFilter === 'Open'" 
+        (click)="setFilter('Open')">
+        Open
+      </button>
+      <button 
+        type="button" 
+        class="tab-btn" 
+        [class.active]="activeFilter === 'InProgress'" 
+        (click)="setFilter('InProgress')">
+        In Progress
+      </button>
+      <button 
+        type="button" 
+        class="tab-btn" 
+        [class.active]="activeFilter === 'WaitingOnUser'" 
+        (click)="setFilter('WaitingOnUser')">
+        Action Needed
+      </button>
+      <button 
+        type="button" 
+        class="tab-btn" 
+        [class.active]="activeFilter === 'Resolved'" 
+        (click)="setFilter('Resolved')">
+        Resolved
+      </button>
+    </div>
+
+    <div class="search-box">
+      <input 
+        type="text" 
+        placeholder="Search tickets by ID, subject, category..." 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="applyFilter()"
+        id="supportTicketSearch"
+        aria-label="Search Tickets" />
+    </div>
+  </div>
+
+  <!-- ── Tickets List Content ─────────────────────── -->
+  @if (isLoading) {
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p>Loading your support tickets...</p>
+    </div>
+  } @else if (error) {
+    <div class="state-container error-state">
+      <span class="state-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button type="button" class="btn-secondary" (click)="loadTickets()">Try Again</button>
+    </div>
+  } @else if (filteredTickets.length === 0) {
+    <div class="state-container empty-state">
+      <div class="empty-illustration">📨</div>
+      <h3>No support tickets found</h3>
+      <p>
+        @if (searchQuery || activeFilter !== 'ALL') {
+          No tickets match your active filter or search query.
+        } @else {
+          You haven't opened any support inquiries yet. Need assistance with something?
+        }
+      </p>
+      <a routerLink="/support/new" class="btn-primary">Create Your First Ticket</a>
+    </div>
+  } @else {
+    <div class="tickets-grid">
+      @for (ticket of filteredTickets; track ticket.id) {
+        <div class="ticket-card card-hover" [routerLink]="['/support', ticket.id]">
+          
+          <div class="ticket-card-header">
+            <div class="ticket-ref-group">
+              <span class="ticket-id-badge">{{ ticket.ticketNumber }}</span>
+              <span class="ticket-category-pill">{{ ticket.category }}</span>
+            </div>
+            <div class="badges-right">
+              <span class="priority-pill" [ngClass]="getPriorityClass(ticket.priority)">
+                {{ ticket.priority }}
+              </span>
+              <span class="status-pill" [ngClass]="getStatusClass(ticket.status)">
+                {{ formatStatusLabel(ticket.status) }}
+              </span>
+            </div>
+          </div>
+
+          <h3 class="ticket-subject">{{ ticket.subject }}</h3>
+
+          <div class="ticket-card-footer">
+            <div class="meta-left">
+              <span class="meta-item">
+                <span class="icon">💬</span> {{ ticket.messagesCount }} {{ ticket.messagesCount === 1 ? 'Message' : 'Messages' }}
+              </span>
+              @if (ticket.assignedAdminName) {
+                <span class="meta-item assigned">
+                  <span class="icon">👤</span> Handling: <strong>{{ ticket.assignedAdminName }}</strong>
+                </span>
+              }
+            </div>
+            
+            <div class="meta-right">
+              <span class="ticket-date">{{ ticket.createdAt | date:'mediumDate' }}</span>
+              <span class="action-link">Open Thread &rarr;</span>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+</div>

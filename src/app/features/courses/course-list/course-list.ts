@@ -106,5 +106,10 @@ export class CourseList implements OnInit, OnDestroy {
   getInitial(name: string): string {
     return name ? name.charAt(0).toUpperCase() : '?';
   }
+
+  getDiscountPercentage(price: number, discountPrice: number | null | undefined): number {
+    if (!discountPrice || price <= 0 || discountPrice >= price) return 0;
+    return Math.round(((price - discountPrice) / price) * 100);
+  }
 }
 //to check why we are not able to see the filters

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Navbar } from './layout/navbar/navbar';
+import { AiCopilot } from './features/ai-copilot/ai-copilot';
 
 /** Routes where the navbar should be hidden (full-screen auth pages) */
 const AUTH_ROUTES = ['/login', '/register'];
@@ -9,7 +10,7 @@ const AUTH_ROUTES = ['/login', '/register'];
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, Navbar],
+  imports: [RouterOutlet, Navbar, AiCopilot],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

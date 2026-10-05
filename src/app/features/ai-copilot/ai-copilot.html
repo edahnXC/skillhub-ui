@@ -1,0 +1,164 @@
+<div class="ai-copilot-root">
+  
+  <!-- ── Floating AI Trigger Launcher ───────────── -->
+  @if (!isOpen) {
+    <button 
+      type="button" 
+      class="copilot-launcher-btn" 
+      (click)="toggleOpen()"
+      aria-label="Open SkillHub AI Learning Copilot"
+      title="Ask SkillHub AI Copilot">
+      <div class="launcher-glow"></div>
+      <div class="launcher-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <span class="launcher-text">Ask AI</span>
+      <span class="pulse-ring"></span>
+    </button>
+  }
+
+  <!-- ── Floating AI Chat Window ────────────────── -->
+  @if (isOpen) {
+    <div 
+      class="copilot-window card-shadow animate-scale-up" 
+      [class.expanded]="isExpanded"
+      role="dialog"
+      aria-labelledby="copilotTitle">
+      
+      <!-- Window Header -->
+      <div class="copilot-header">
+        <div class="header-branding">
+          <div class="avatar-box">
+            <span class="ai-sparkles">✨</span>
+            <span class="online-indicator"></span>
+          </div>
+          <div class="header-titles">
+            <div class="title-row">
+              <h3 id="copilotTitle">SkillHub Copilot</h3>
+              <span class="gemini-tag">Gemini Flash</span>
+            </div>
+            <p class="subtitle">Your 24/7 AI Learning & Coding Tutor</p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <button 
+            type="button" 
+            class="control-btn" 
+            (click)="toggleExpand()" 
+            [title]="isExpanded ? 'Restore window size' : 'Expand window'"
+            aria-label="Toggle window size">
+            {{ isExpanded ? '🗗' : '🗖' }}
+          </button>
+          <button 
+            type="button" 
+            class="control-btn" 
+            (click)="clearChat()" 
+            title="Clear chat history"
+            aria-label="Clear chat history">
+            🗑️
+          </button>
+          <button 
+            type="button" 
+            class="control-btn close-btn" 
+            (click)="close()" 
+            title="Close Copilot"
+            aria-label="Close Copilot">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Guest Quota Banner -->
+      @if (!isLoggedIn) {
+        <div class="quota-banner">
+          <span class="quota-icon">⚡</span>
+          <div class="quota-text">
+            @if (isGuestLimitReached) {
+              <span>Guest quota reached. <strong><a routerLink="/login" (click)="close()">Sign in</a></strong> for unlimited access!</span>
+            } @else if (remainingGuestQuota !== null) {
+              <span>Guest Access: <strong>{{ remainingGuestQuota }} of 5</strong> free prompts remaining.</span>
+            } @else {
+              <span>Guest Preview Mode: 5 free AI prompts. <strong><a routerLink="/register" (click)="close()">Join Free</a></strong></span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Messages Timeline Scroll -->
+      <div class="messages-viewport" #messagesContainer>
+        @for (msg of messages; track msg.id) {
+          <div class="message-bubble-wrapper" [ngClass]="msg.role === 'user' ? 'user-bubble-wrapper' : 'ai-bubble-wrapper'">
+            
+            <div class="message-bubble" [ngClass]="msg.role === 'user' ? 'user-bubble' : 'ai-bubble'">
+              @if (msg.role === 'model') {
+                <div class="ai-avatar-tiny">✨</div>
+              }
+              
+              <div class="bubble-content" [innerHTML]="formatContent(msg.text)"></div>
+            </div>
+
+            <span class="msg-timestamp">{{ msg.timestamp | date:'shortTime' }}</span>
+
+          </div>
+        }
+
+        @if (isThinking) {
+          <div class="message-bubble-wrapper ai-bubble-wrapper">
+            <div class="message-bubble ai-bubble thinking-bubble">
+              <div class="ai-avatar-tiny">✨</div>
+              <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Suggestion Chips Bar -->
+      @if (suggestions.length > 0 && !isThinking) {
+        <div class="suggestions-strip">
+          @for (sug of suggestions; track sug) {
+            <button 
+              type="button" 
+              class="suggestion-chip" 
+              (click)="sendSuggestion(sug)">
+              {{ sug }}
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Composer Input -->
+      <div class="copilot-input-area">
+        <div class="input-pill-wrapper">
+          <textarea 
+            rows="1" 
+            placeholder="Ask a question or paste code..."
+            [(ngModel)]="inputMessage" 
+            (keydown)="onKeyDown($event)"
+            [disabled]="isThinking || isGuestLimitReached"
+            aria-label="Ask SkillHub AI Copilot"></textarea>
+        </div>
+
+        <button 
+          type="button" 
+          class="btn-send"
+          (click)="sendMessage()" 
+          [disabled]="!inputMessage.trim() || isThinking || isGuestLimitReached"
+          aria-label="Send message"
+          title="Send message">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  }
+
+</div>

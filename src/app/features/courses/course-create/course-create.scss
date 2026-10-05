@@ -104,6 +104,27 @@
   color: var(--text-light);
   margin-top: 3px;
   line-height: 1.5;
+
+  &.upload-active {
+    color: #667eea;
+    font-weight: 700;
+  }
+
+  &.upload-success {
+    margin-top: 5px;
+    color: #10b981;
+    font-weight: 600;
+  }
+}
+
+.image-preview {
+  margin-top: 10px;
+
+  .preview-img {
+    max-width: 200px;
+    border-radius: var(--radius-md, 8px);
+    display: block;
+  }
 }
 
 /* ── Form Actions Row ───────────────────── */

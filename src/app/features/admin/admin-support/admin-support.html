@@ -1,0 +1,402 @@
+<div class="admin-support-container">
+  
+  <!-- ── Top Header ──────────────────────────────── -->
+  <div class="studio-header">
+    <div class="header-left">
+      <span class="badge-tag">🛡️ Operational Command</span>
+      <h1>Helpdesk & Support Desk</h1>
+      <p>Manage customer tickets, coordinate staff responses, and maintain internal triage notes.</p>
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="filter-pills">
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="filterStatus === 'ALL'" 
+        (click)="filterStatus = 'ALL'; loadTickets()">
+        All
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="filterStatus === 'Open'" 
+        (click)="filterStatus = 'Open'; loadTickets()">
+        Open
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="filterStatus === 'InProgress'" 
+        (click)="filterStatus = 'InProgress'; loadTickets()">
+        In Progress
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="filterStatus === 'WaitingOnUser'" 
+        (click)="filterStatus = 'WaitingOnUser'; loadTickets()">
+        Waiting on User
+      </button>
+      <button 
+        type="button" 
+        class="filter-pill" 
+        [class.active]="filterStatus === 'Resolved'" 
+        (click)="filterStatus = 'Resolved'; loadTickets()">
+        Resolved
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Secondary Filter Bar ─────────────────────── -->
+  <div class="filter-bar card-shadow">
+    <div class="search-input-group">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Search tickets by ID, subject, student name or email..." 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="loadTickets()"
+        id="adminSupportSearch"
+        aria-label="Search Tickets" />
+    </div>
+
+    <div class="dropdown-filters">
+      <div class="select-wrapper">
+        <label for="filterPriority" class="sr-only">Priority Filter</label>
+        <select 
+          id="filterPriority" 
+          title="Filter by priority"
+          aria-label="Filter by priority"
+          [(ngModel)]="filterPriority" 
+          (ngModelChange)="loadTickets()">
+          <option value="ALL">All Priorities</option>
+          <option value="Urgent">Urgent</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+
+      <div class="select-wrapper">
+        <label for="filterCategory" class="sr-only">Category Filter</label>
+        <select 
+          id="filterCategory" 
+          title="Filter by category"
+          aria-label="Filter by category"
+          [(ngModel)]="filterCategory" 
+          (ngModelChange)="loadTickets()">
+          <option value="ALL">All Categories</option>
+          <option value="CourseContent">Course & Content</option>
+          <option value="PaymentBilling">Payment & Billing</option>
+          <option value="AccountAccess">Account & Login</option>
+          <option value="TechnicalIssue">Technical Issue</option>
+          <option value="GeneralInquiry">General Inquiry</option>
+        </select>
+      </div>
+
+      <button type="button" class="btn-refresh" (click)="loadTickets()" title="Refresh tickets">
+        🔄 Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Studio Workspace Layout ──────────────────── -->
+  <div class="studio-layout">
+    
+    <!-- ── Left: Ticket Queue List ────────────────── -->
+    <div class="queue-pane card-shadow">
+      <div class="queue-header">
+        <span class="queue-title">Ticket Queue</span>
+        <span class="queue-count">{{ tickets.length }} {{ tickets.length === 1 ? 'ticket' : 'tickets' }}</span>
+      </div>
+
+      <div class="queue-list-scroll">
+        @if (isLoadingList) {
+          <div class="pane-state">
+            <div class="spinner"></div>
+            <p>Loading queue...</p>
+          </div>
+        } @else if (tickets.length === 0) {
+          <div class="pane-state empty">
+            <span class="icon">✨</span>
+            <p>No tickets match the selected filters.</p>
+          </div>
+        } @else {
+          @for (ticket of tickets; track ticket.id) {
+            <div 
+              class="queue-item"
+              [class.active]="selectedTicket?.id === ticket.id"
+              (click)="selectTicket(ticket.id)">
+              
+              <div class="item-top">
+                <span class="ticket-num">{{ ticket.ticketNumber }}</span>
+                <span class="priority-pill" [ngClass]="getPriorityClass(ticket.priority)">
+                  {{ ticket.priority }}
+                </span>
+              </div>
+
+              <h4 class="item-subject">{{ ticket.subject }}</h4>
+
+              <div class="item-user">
+                <span class="user-name">👤 {{ ticket.userName }}</span>
+                <span class="status-pill" [ngClass]="getStatusClass(ticket.status)">
+                  {{ formatStatusLabel(ticket.status) }}
+                </span>
+              </div>
+
+              <div class="item-meta">
+                <span class="category-tag">{{ ticket.category }}</span>
+                <span class="time-ago">{{ ticket.createdAt | date:'shortDate' }}</span>
+              </div>
+
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- ── Right: Ticket Detail & Staff Actions ───── -->
+    <div class="workspace-pane card-shadow">
+      @if (isLoadingDetail) {
+        <div class="pane-state">
+          <div class="spinner"></div>
+          <p>Loading ticket workspace...</p>
+        </div>
+      } @else if (!selectedTicket) {
+        <div class="pane-state empty-workspace">
+          <span class="big-icon">📬</span>
+          <h3>Select a ticket from the queue</h3>
+          <p>Choose an inquiry from the left panel to inspect the conversation timeline, assign staff, post internal notes, or reply to the user.</p>
+        </div>
+      } @else {
+
+        <!-- Ticket Action Toolbar -->
+        <div class="workspace-toolbar">
+          <div class="toolbar-left">
+            <span class="badge-id">{{ selectedTicket.ticketNumber }}</span>
+            <h2 class="ticket-headline">{{ selectedTicket.subject }}</h2>
+          </div>
+
+          <div class="toolbar-actions">
+            <!-- Custom Dynamic Status Selector Dropdown -->
+            <div class="custom-select-container status-dropdown-wrapper">
+              <span class="control-label">Status</span>
+              <div class="dropdown-trigger-wrapper">
+                <button 
+                  type="button" 
+                  class="status-trigger-btn"
+                  [ngClass]="getCurrentStatusMeta(selectedTicket.status).pillClass"
+                  (click)="toggleStatusDropdown($event)"
+                  [disabled]="isUpdatingStatus"
+                  aria-haspopup="listbox"
+                  [attr.aria-expanded]="statusDropdownOpen"
+                  id="ticketStatusDropdownBtn">
+                  <span class="status-dot"></span>
+                  <span class="status-name">{{ getCurrentStatusMeta(selectedTicket.status).label }}</span>
+                  <span class="chevron" [class.rotated]="statusDropdownOpen">▾</span>
+                </button>
+
+                @if (statusDropdownOpen) {
+                  <div class="custom-dropdown-menu status-menu animate-fade-in-up" role="listbox" (click)="$event.stopPropagation()">
+                    <div class="menu-header">Change Ticket Lifecycle</div>
+                    @for (opt of statusOptions; track opt.id) {
+                      <button 
+                        type="button"
+                        class="menu-option-item"
+                        [class.selected]="selectedTicket.status === opt.id"
+                        (click)="selectStatus(opt.id)"
+                        role="option"
+                        [attr.aria-selected]="selectedTicket.status === opt.id">
+                        <div class="opt-left">
+                          <span class="opt-pill" [ngClass]="opt.pillClass">
+                            <span class="dot"></span>
+                            {{ opt.label }}
+                          </span>
+                          <span class="opt-desc">{{ opt.desc }}</span>
+                        </div>
+                        @if (selectedTicket.status === opt.id) {
+                          <span class="opt-check">✓</span>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Custom Dynamic Staff Assignee Dropdown -->
+            <div class="custom-select-container assignee-dropdown-wrapper">
+              <span class="control-label">Assigned Staff</span>
+              <div class="dropdown-trigger-wrapper">
+                <button 
+                  type="button" 
+                  class="assign-trigger-btn"
+                  [class.unassigned]="!selectedTicket.assignedAdminId"
+                  (click)="toggleAssignDropdown($event)"
+                  [disabled]="isUpdatingAssignee"
+                  aria-haspopup="listbox"
+                  [attr.aria-expanded]="assignDropdownOpen"
+                  id="ticketAssignDropdownBtn">
+                  <span class="assign-avatar">{{ selectedTicket.assignedAdminName ? selectedTicket.assignedAdminName.charAt(0).toUpperCase() : '👤' }}</span>
+                  <span class="assign-name">{{ selectedTicket.assignedAdminName || 'Unassigned' }}</span>
+                  <span class="chevron" [class.rotated]="assignDropdownOpen">▾</span>
+                </button>
+
+                @if (assignDropdownOpen) {
+                  <div class="custom-dropdown-menu assign-menu animate-fade-in-up" role="listbox" (click)="$event.stopPropagation()">
+                    <div class="menu-header">Assign Staff Member</div>
+                    <button 
+                      type="button"
+                      class="menu-option-item"
+                      [class.selected]="!selectedTicket.assignedAdminId"
+                      (click)="selectAssignee(null)"
+                      role="option">
+                      <div class="opt-left">
+                        <span class="assign-option-name">Unassigned</span>
+                        <span class="opt-desc">Return ticket to open general pool</span>
+                      </div>
+                      @if (!selectedTicket.assignedAdminId) {
+                        <span class="opt-check">✓</span>
+                      }
+                    </button>
+                    @for (staff of staffUsers; track staff.id) {
+                      <button 
+                        type="button"
+                        class="menu-option-item"
+                        [class.selected]="selectedTicket.assignedAdminId === staff.id"
+                        (click)="selectAssignee(staff.id)"
+                        role="option">
+                        <div class="opt-left">
+                          <div class="staff-row">
+                            <span class="staff-badge-avatar">{{ staff.firstName.charAt(0).toUpperCase() }}</span>
+                            <span class="assign-option-name">{{ staff.firstName }} {{ staff.lastName }}</span>
+                            <span class="staff-role-pill">{{ staff.roles[0] || 'Staff' }}</span>
+                          </div>
+                          <span class="opt-desc">{{ staff.email }}</span>
+                        </div>
+                        @if (selectedTicket.assignedAdminId === staff.id) {
+                          <span class="opt-check">✓</span>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Requester Info Strip -->
+        <div class="requester-strip">
+          <div class="req-item">
+            <span class="label">Requester:</span>
+            <span class="val"><strong>{{ selectedTicket.userName }}</strong> ({{ selectedTicket.userEmail }})</span>
+          </div>
+          <div class="req-item">
+            <span class="label">Category:</span>
+            <span class="val">{{ selectedTicket.category }}</span>
+          </div>
+          <div class="req-item">
+            <span class="label">Opened:</span>
+            <span class="val">{{ selectedTicket.createdAt | date:'medium' }}</span>
+          </div>
+          @if (selectedTicket.resolvedAt) {
+            <div class="req-item resolved-text">
+              <span class="label">Resolved:</span>
+              <span class="val">{{ selectedTicket.resolvedAt | date:'medium' }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Thread Timeline -->
+        <div class="timeline-messages">
+          @for (msg of selectedTicket.messages; track msg.id) {
+            <div 
+              class="timeline-card" 
+              [class.internal-note]="msg.isInternalNote"
+              [class.staff-reply]="!msg.isInternalNote && msg.senderUserId === currentUserId"
+              [class.user-reply]="!msg.isInternalNote && msg.senderUserId !== currentUserId">
+              
+              <div class="msg-header">
+                <div class="sender-tag">
+                  @if (msg.isInternalNote) {
+                    <span class="lock-icon">🔒</span>
+                    <span class="author-name">Internal Staff Note &bull; {{ msg.senderName }}</span>
+                  } @else {
+                    <span class="sender-role-icon">
+                      {{ msg.senderUserId === selectedTicket.userId ? '👤' : '🛡️' }}
+                    </span>
+                    <span class="author-name">{{ msg.senderName }}</span>
+                    <span class="role-badge">{{ msg.senderRole }}</span>
+                  }
+                </div>
+                <span class="msg-time">{{ msg.createdAt | date:'short' }}</span>
+              </div>
+
+              <div class="msg-body">
+                <p>{{ msg.messageText }}</p>
+              </div>
+
+              @if (msg.attachmentUrl) {
+                <div class="msg-attachment">
+                  <span>📎 Attachment:</span>
+                  <a [href]="msg.attachmentUrl" target="_blank" rel="noopener">View File</a>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Reply / Note Composer -->
+        <div class="composer-card">
+          <div class="composer-tabs">
+            <button 
+              type="button" 
+              class="comp-tab"
+              [class.active]="!isInternalNote" 
+              (click)="isInternalNote = false">
+              💬 Public Response (User Emailed)
+            </button>
+            <button 
+              type="button" 
+              class="comp-tab internal"
+              [class.active]="isInternalNote" 
+              (click)="isInternalNote = true">
+              🔒 Internal Staff Note (Admins Only)
+            </button>
+          </div>
+
+          <div class="composer-body" [class.internal-bg]="isInternalNote">
+            <textarea 
+              rows="3" 
+              [placeholder]="isInternalNote ? 'Leave internal triage note for other admins...' : 'Type response to send directly to ' + selectedTicket.userName + '...'"
+              [(ngModel)]="replyText"></textarea>
+
+            <div class="composer-footer">
+              <span class="mode-indicator">
+                @if (isInternalNote) {
+                  <span>🔒 Only visible to SuperAdmin and SubAdmin staff.</span>
+                } @else {
+                  <span>📧 Will be dispatched via free transactional email engine.</span>
+                }
+              </span>
+
+              <button 
+                type="button" 
+                class="btn-post"
+                [class.btn-internal]="isInternalNote"
+                (click)="sendStaffReply()"
+                [disabled]="isSending || !replyText.trim()">
+                {{ isSending ? 'Posting...' : (isInternalNote ? 'Save Internal Note' : 'Send Public Reply') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      }
+    </div>
+
+  </div>
+
+</div>

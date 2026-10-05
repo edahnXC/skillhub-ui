@@ -84,4 +84,9 @@ export class InstructorDetail implements OnInit {
   getInitials(firstName: string, lastName: string): string {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   }
+
+  getDiscountPercentage(price: number, discountPrice: number | null | undefined): number {
+    if (!discountPrice || price <= 0 || discountPrice >= price) return 0;
+    return Math.round(((price - discountPrice) / price) * 100);
+  }
 }

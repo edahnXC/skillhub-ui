@@ -132,9 +132,9 @@
 
                     @if (expandedSections[section.id]) {
                       <div class="accordion-content">
-                        <ul class="lesson-list">
+                        <div class="lesson-list">
                           @for (lesson of section.lessons; track lesson.id; let lIdx = $index) {
-                            <li class="lesson-item">
+                            <div class="lesson-item">
                               <div class="lesson-title-group">
                                 <span class="play-icon">▶</span>
                                 <span class="lesson-title">{{ lesson.title }}</span>
@@ -149,9 +149,9 @@
                                   {{ lesson.durationMinutes > 0 ? lesson.durationMinutes + 'm' : '< 1m' }}
                                 </span>
                               </div>
-                            </li>
+                            </div>
                           }
-                        </ul>
+                        </div>
                       </div>
                     }
                   </div>
@@ -263,17 +263,18 @@
         <div class="sidebar">
           <div class="pricing-card">
             <div class="price-section">
-              @if (course.discountPrice) {
-                <span class="current-price">₹{{ course.discountPrice }}</span>
-                <span class="original-price">₹{{ course.price }}</span>
+              @if (course.discountPrice !== null && course.discountPrice !== undefined && course.discountPrice < course.price) {
+                <span class="current-price">₹{{ course.discountPrice | number }}</span>
+                <span class="original-price">₹{{ course.price | number }}</span>
+                <span class="discount-badge">{{ getDiscountPercentage(course.price, course.discountPrice) }}% OFF</span>
               } @else {
-                <span class="current-price">{{ course.price === 0 ? 'Free' : '₹' + course.price }}</span>
+                <span class="current-price">{{ course.price === 0 ? 'Free' : ('₹' + (course.price | number)) }}</span>
               }
             </div>
 
             @if (!isOwner && !isApprover) {
               @if (isEnrolled) {
-                <a [routerLink]="['/learn', course.id]" class="btn-success w-100 enroll-btn text-center" style="font-weight: 700;">
+                <a [routerLink]="['/learn', course.id]" class="btn-success w-100 enroll-btn text-center font-bold">
                   ▶ Go to Classroom
                 </a>
               } @else if (isLoggedIn && !isStudent) {
@@ -325,10 +326,10 @@
               <div class="instructor-controls">
                 <h4>Instructor Actions</h4>
                 <div class="action-buttons">
-                  <a [routerLink]="['/courses', course.id, 'edit']" class="btn-primary w-100 text-center" style="text-decoration: none;">
+                  <a [routerLink]="['/courses', course.id, 'edit']" class="btn-primary w-100 text-center text-no-dec">
                     ✏️ Edit Course &amp; Curriculum
                   </a>
-                  <a [routerLink]="['/learn', course.id]" class="btn-outline w-100 text-center" style="text-decoration: none; margin-top: 8px;">
+                  <a [routerLink]="['/learn', course.id]" class="btn-outline w-100 text-center text-no-dec mt-2">
                     ▶ Preview as Student
                   </a>
                 </div>

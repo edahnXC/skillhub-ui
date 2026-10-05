@@ -18,6 +18,10 @@ import { MyLearning } from './features/enrollment/my-learning/my-learning';
 import { EnrollmentSuccess } from './features/enrollment/enrollment-success/enrollment-success';
 import { CoursePlayer } from './features/enrollment/course-player/course-player';
 import { ProfileSettings } from './features/profile/profile-settings/profile-settings';
+import { SupportList } from './features/support/support-list/support-list';
+import { SupportCreate } from './features/support/support-create/support-create';
+import { SupportDetail } from './features/support/support-detail/support-detail';
+import { AdminSupport } from './features/admin/admin-support/admin-support';
 import { authGuard }    from './core/guards/auth-guard';
 
 export const routes: Routes = [
@@ -37,6 +41,23 @@ export const routes: Routes = [
   { path: 'courses',     component: CourseList },
   { path: 'instructors', component: InstructorList },
   { path: 'instructors/:id', component: InstructorDetail },
+
+  // Support Helpdesk (Student, Instructor, Staff)
+  {
+    path: 'support',
+    component: SupportList,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'support/new',
+    component: SupportCreate,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'support/:id',
+    component: SupportDetail,
+    canActivate: [authGuard]
+  },
 
   // Protected pages (requires login)
   {
@@ -88,7 +109,8 @@ export const routes: Routes = [
       { path: 'users', component: AdminUsers },
       { path: 'courses', component: AdminCourses },
       { path: 'create-user', component: AdminCreateUser, canActivate: [authGuard], data: { roles: ['SuperAdmin'] } },
-      { path: 'permissions', component: AdminPermissions, canActivate: [authGuard], data: { roles: ['SuperAdmin'] } }
+      { path: 'permissions', component: AdminPermissions, canActivate: [authGuard], data: { roles: ['SuperAdmin'] } },
+      { path: 'support', component: AdminSupport }
     ]
   }
 ];

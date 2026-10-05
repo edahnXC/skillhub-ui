@@ -7,14 +7,6 @@
       <h1>Dynamic Permission Management Studio</h1>
       <p>Configure global role access matrices and tailor granular permissions for individual SubAdmins.</p>
     </div>
-
-    <div class="header-actions">
-      @if (activeTab === 'matrix') {
-        <button type="button" class="btn-create-role" (click)="openCreateRoleModal()">
-          <span>+</span> Create Custom Role
-        </button>
-      }
-    </div>
   </div>
 
   <!-- ── Tab Navigation ───────────────────────────── -->
@@ -77,8 +69,8 @@
         </div>
 
         <div class="category-filter">
-          <label>Filter Category:</label>
-          <select [(ngModel)]="selectedCategory">
+          <label for="categoryFilterSelect">Filter Category:</label>
+          <select id="categoryFilterSelect" [(ngModel)]="selectedCategory" aria-label="Filter Category" title="Filter Category">
             <option value="ALL">All Categories ({{ categories.length }})</option>
             @for (cat of availableCategoryNames; track cat) {
               <option [value]="cat">{{ cat }}</option>
@@ -145,6 +137,7 @@
                           <label class="switch-toggle" [title]="'Toggle ' + perm.name + ' for ' + role.name">
                             <input 
                               type="checkbox" 
+                              [attr.aria-label]="'Toggle ' + perm.name + ' for ' + role.name"
                               [checked]="hasPermission(role.id, perm.id)"
                               (change)="togglePermission(role, perm.id)" />
                             <span class="slider"></span>
@@ -289,49 +282,6 @@
   }
 
 </div>
-
-<!-- ── Create Role Modal ────────────────────────── -->
-@if (showCreateRoleModal) {
-  <div class="modal-backdrop" (click)="closeCreateRoleModal()">
-    <div class="role-modal-card" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Create New Administrative Role</h3>
-        <button type="button" class="btn-close" (click)="closeCreateRoleModal()">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-group">
-          <label for="newRoleName">Role Name</label>
-          <input 
-            type="text" 
-            id="newRoleName" 
-            [(ngModel)]="newRoleName" 
-            placeholder="e.g. ContentModerator, FinanceAuditor" />
-        </div>
-
-        <div class="form-group">
-          <label for="newRoleDescription">Role Description</label>
-          <textarea 
-            id="newRoleDescription" 
-            rows="3" 
-            [(ngModel)]="newRoleDescription" 
-            placeholder="Describe the duties and intended access scope of this role..."></textarea>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="closeCreateRoleModal()">Cancel</button>
-        <button 
-          type="button" 
-          class="btn-primary" 
-          [disabled]="!newRoleName.trim() || isCreatingRole" 
-          (click)="createRole()">
-          {{ isCreatingRole ? 'Creating Role...' : 'Create Role' }}
-        </button>
-      </div>
-    </div>
-  </div>
-}
 
 <!-- ── Toast Feedback ────────────────────────────── -->
 @if (showToast) {

@@ -1,0 +1,124 @@
+<div class="create-ticket-page">
+  <div class="container">
+    
+    <!-- ── Back Link ────────────────────────────── -->
+    <a routerLink="/support" class="back-link">
+      <span>&larr;</span> Back to Support Helpdesk
+    </a>
+
+    <div class="page-title-section">
+      <h1>Open a Support Inquiry</h1>
+      <p>Submit your request to the SkillHub team. You will receive an email confirmation and direct link to track your ticket.</p>
+    </div>
+
+    <div class="content-layout">
+      
+      <!-- ── Left: Form ─────────────────────────── -->
+      <form class="ticket-form card-shadow" (ngSubmit)="onSubmit()">
+        
+        @if (errorMessage) {
+          <div class="alert-error">
+            <span>⚠️</span> {{ errorMessage }}
+          </div>
+        }
+
+        <!-- Category Selector -->
+        <div class="form-section">
+          <label class="section-label">Select Issue Category <span class="required">*</span></label>
+          <div class="category-cards-grid">
+            @for (cat of categories; track cat.id) {
+              <div 
+                class="category-option-card" 
+                [class.selected]="form.category === cat.id"
+                (click)="selectCategory(cat.id)">
+                <span class="cat-icon">{{ cat.icon }}</span>
+                <div class="cat-info">
+                  <span class="cat-title">{{ cat.label }}</span>
+                  <span class="cat-desc">{{ cat.desc }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Subject -->
+        <div class="form-group">
+          <label for="ticketSubject">Subject Summary <span class="required">*</span></label>
+          <input 
+            type="text" 
+            id="ticketSubject" 
+            name="subject"
+            placeholder="e.g. Video player error on Lesson 4 in .NET Masterclass"
+            [(ngModel)]="form.subject" 
+            required />
+          <span class="field-hint">A concise summary helps our staff route your issue faster.</span>
+        </div>
+
+        <!-- Priority Selector -->
+        <div class="form-group">
+          <label class="section-label">Urgency / Priority Level <span class="required">*</span></label>
+          <div class="priority-selector">
+            @for (pri of priorities; track pri.id) {
+              <button 
+                type="button" 
+                class="priority-chip"
+                [class.selected]="form.priority === pri.id"
+                [class.urgent]="pri.id === 'Urgent'"
+                (click)="selectPriority(pri.id)">
+                {{ pri.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Detailed Description -->
+        <div class="form-group">
+          <label for="ticketMessage">Detailed Description <span class="required">*</span></label>
+          <textarea 
+            id="ticketMessage" 
+            name="initialMessage"
+            rows="6" 
+            placeholder="Please provide steps to reproduce, error messages, or course titles related to your inquiry..."
+            [(ngModel)]="form.initialMessage" 
+            required></textarea>
+          <span class="field-hint">Feel free to mention your device, browser, or any troubleshooting steps you've tried.</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <a routerLink="/support" class="btn-cancel">Cancel</a>
+          <button 
+            type="submit" 
+            class="btn-submit" 
+            [disabled]="isSubmitting || !form.subject.trim() || !form.initialMessage.trim()">
+            {{ isSubmitting ? 'Registering Ticket...' : '🚀 Submit Support Ticket' }}
+          </button>
+        </div>
+
+      </form>
+
+      <!-- ── Right: Sidebar Tips ────────────────── -->
+      <aside class="support-sidebar">
+        
+        <div class="sidebar-card info-card">
+          <div class="sidebar-icon">💡</div>
+          <h3>Tips for Quick Resolutions</h3>
+          <ul class="tips-list">
+            <li>Mention the specific <strong>Course Name</strong> and <strong>Lesson ID</strong> if relevant.</li>
+            <li>For billing or payments, include your order reference number or transaction date.</li>
+            <li>Check your email inbox after submission for the <strong>TICK-XXXX</strong> receipt.</li>
+          </ul>
+        </div>
+
+        <div class="sidebar-card sla-card">
+          <div class="sidebar-icon">⏱️</div>
+          <h3>Support SLA & Response Times</h3>
+          <p>Our operational staff responds to tickets throughout standard business hours. Most inquiries receive a resolution within <strong>24 hours</strong>.</p>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+</div>

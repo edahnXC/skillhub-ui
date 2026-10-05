@@ -33,14 +33,14 @@ export class CourseDetail implements OnInit {
   isLoadingReviews = false;
   error: string | null = null;
   currentUserId: number | null = null;
-  isLoggedIn = false;
-  isStudent = false;
-  isAdmin = false;
-  isSubAdmin = false;
-  isApprover = false;
-  isEnrolled = false;
-  isEnrolling = false;
-  isApproving = false;
+  isLoggedIn: boolean = false;
+  isStudent: boolean = false;
+  isAdmin: boolean = false;
+  isSubAdmin: boolean = false;
+  isApprover: boolean = false;
+  isEnrolled: boolean = false;
+  isEnrolling: boolean = false;
+  isApproving: boolean = false;
 
   // Review Form State
   showReviewModal = false;
@@ -303,5 +303,10 @@ export class CourseDetail implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 4000);
+  }
+
+  getDiscountPercentage(price: number, discountPrice: number | null | undefined): number {
+    if (!discountPrice || price <= 0 || discountPrice >= price) return 0;
+    return Math.round(((price - discountPrice) / price) * 100);
   }
 }

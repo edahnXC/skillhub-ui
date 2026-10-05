@@ -41,25 +41,7 @@
     }
   }
 
-  .header-actions {
-    .btn-create-role {
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
-      color: #ffffff;
-      border: none;
-      padding: 0.65rem 1.25rem;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-      transition: all 0.15s;
 
-      &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
-      }
-    }
-  }
 }
 
 /* ── Studio Tab Navigation ─────────────────────── */
@@ -803,108 +785,7 @@
   }
 }
 
-/* ── Modal Dialogs ─────────────────────────────── */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1.5rem;
-}
 
-.role-modal-card {
-  background: #ffffff;
-  border-radius: 12px;
-  max-width: 480px;
-  width: 100%;
-  overflow: hidden;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-
-    h3 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin: 0;
-    }
-
-    .btn-close {
-      background: none;
-      border: none;
-      font-size: 1.25rem;
-      color: #94a3b8;
-      cursor: pointer;
-    }
-  }
-
-  .modal-body {
-    padding: 1.5rem;
-
-    .form-group {
-      margin-bottom: 1.25rem;
-
-      label {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #0f172a;
-        margin-bottom: 0.4rem;
-      }
-
-      input, textarea {
-        width: 100%;
-        padding: 0.65rem 0.85rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        font-family: inherit;
-        outline: none;
-
-        &:focus {
-          border-color: #4f46e5;
-        }
-      }
-    }
-  }
-
-  .modal-footer {
-    padding: 1rem 1.5rem;
-    background: #f8fafc;
-    border-top: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-
-    .btn-secondary {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      color: #475569;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: #4f46e5;
-      color: #ffffff;
-      border: none;
-      padding: 0.5rem 1.25rem;
-      border-radius: 6px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-  }
-}
 
 .toast-notification {
   position: fixed;
