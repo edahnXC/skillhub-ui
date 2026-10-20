@@ -14,6 +14,14 @@ from '../models/create-course-request.model';
 
 import { CourseCategory } from '../models/course-category.model';
 
+export interface PlatformStats {
+    coursesCount: number;
+    instructorsCount: number;
+    studentsCount: number;
+    totalEnrollments: number;
+    averageRating: number;
+}
+
 @Injectable({
     providedIn:'root'
 })
@@ -22,6 +30,10 @@ export class CourseService
     constructor(
         private http:HttpClient)
     {
+    }
+
+    getPlatformStats(): Observable<PlatformStats> {
+        return this.http.get<PlatformStats>(`${environment.apiUrl}/course/platform-stats`);
     }
     getAllCourses()
     : Observable<Course[]>

@@ -68,22 +68,22 @@
   <div class="container">
     <div class="stats-grid">
       <div class="stat-item">
-        <span class="stat-number">100+</span>
+        <span class="stat-number">{{ formatCount(stats.coursesCount) }}</span>
         <span class="stat-label">Courses Available</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
-        <span class="stat-number">50+</span>
-        <span class="stat-label">Expert Instructors</span>
+        <span class="stat-number">{{ formatCount(stats.instructorsCount) }}</span>
+        <span class="stat-label">{{ stats.instructorsCount === 1 ? 'Expert Instructor' : 'Expert Instructors' }}</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
-        <span class="stat-number">5,000+</span>
+        <span class="stat-number">{{ formatCount(stats.studentsCount) }}</span>
         <span class="stat-label">Students Learning</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
-        <span class="stat-number">4.8 ★</span>
+        <span class="stat-number">{{ formatRating(stats.averageRating) }}</span>
         <span class="stat-label">Average Rating</span>
       </div>
     </div>
