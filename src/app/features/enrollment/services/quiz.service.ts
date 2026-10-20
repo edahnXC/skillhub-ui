@@ -23,4 +23,8 @@ export class QuizService {
   submitQuizAttempt(request: SubmitQuizAttemptRequest): Observable<QuizAttemptResult> {
     return this.http.post<QuizAttemptResult>(`${this.apiUrl}/submit`, request);
   }
+
+  createQuiz(request: any): Observable<Quiz> {
+    return this.http.post<Quiz>(`${this.apiUrl}/create`, request);
+  }
 }

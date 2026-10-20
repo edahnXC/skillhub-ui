@@ -4,6 +4,8 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CourseService } from '../services/course.service';
 import { CurriculumService } from '../services/curriculum.service';
+import { QuizService } from '../../enrollment/services/quiz.service';
+import { Quiz } from '../../enrollment/models/quiz.model';
 import { CourseCategory } from '../models/course-category.model';
 import { CourseSection, CourseLesson, CreateSectionRequest, CreateLessonRequest, CreateLessonResourceRequest } from '../models/curriculum.model';
 
@@ -15,7 +17,7 @@ import { CourseSection, CourseLesson, CreateSectionRequest, CreateLessonRequest,
   styleUrl: './course-edit.scss'
 })
 export class CourseEdit implements OnInit {
-  activeTab: 'details' | 'curriculum' = 'details';
+  activeTab: 'details' | 'curriculum' | 'quizzes' = 'details';
   courseForm: FormGroup;
   categories: CourseCategory[] = [];
   sections: CourseSection[] = [];
@@ -26,6 +28,7 @@ export class CourseEdit implements OnInit {
   error = '';
   successMessage = '';
   courseId: number | null = null;
+  newlyCreated = false;
   
   selectedFile: File | null = null;
   imagePreview: string | null = null;
@@ -48,10 +51,28 @@ export class CourseEdit implements OnInit {
   newResourceFileUrl = '';
   isAddingResource = false;
 
+  // Quiz / Assessment State
+  quizzes: Quiz[] = [];
+  isLoadingQuizzes = false;
+  showCreateQuizModal = false;
+  isSavingQuiz = false;
+  quizError = '';
+
+  newQuizTitle = '';
+  newQuizDescription = '';
+  newQuizPassingScore = 70;
+  newQuizSectionId: number | null = null;
+  newQuizQuestions: Array<{
+    questionText: string;
+    explanation: string;
+    options: Array<{ optionText: string; isCorrect: boolean }>;
+  }> = [];
+
   constructor(
     private fb: FormBuilder,
     private courseService: CourseService,
     private curriculumService: CurriculumService,
+    private quizService: QuizService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -67,19 +88,28 @@ export class CourseEdit implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
+
+    const queryTab = this.route.snapshot.queryParamMap.get('tab');
+    if (queryTab === 'curriculum' || queryTab === 'quizzes') {
+      this.activeTab = queryTab;
+    }
+    if (this.route.snapshot.queryParamMap.get('created') === 'true') {
+      this.newlyCreated = true;
+    }
     
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.courseId = parseInt(idParam, 10);
       this.loadCourse(this.courseId);
       this.loadCurriculum(this.courseId);
+      this.loadQuizzes(this.courseId);
     } else {
       this.error = 'Invalid course ID';
       this.isLoading = false;
     }
   }
 
-  setTab(tab: 'details' | 'curriculum'): void {
+  setTab(tab: 'details' | 'curriculum' | 'quizzes'): void {
     this.activeTab = tab;
     this.error = '';
     this.successMessage = '';
@@ -351,6 +381,154 @@ export class CourseEdit implements OnInit {
       error: (err) => {
         console.error('Failed to delete resource', err);
         alert('Failed to delete resource.');
+      }
+    });
+  }
+
+  // ── Quiz Builder Methods ─────────────────────────────────
+  loadQuizzes(courseId: number): void {
+    this.isLoadingQuizzes = true;
+    this.quizService.getCourseQuizzes(courseId).subscribe({
+      next: (data) => {
+        this.quizzes = data;
+        this.isLoadingQuizzes = false;
+      },
+      error: (err) => {
+        console.error('Failed to load quizzes', err);
+        this.isLoadingQuizzes = false;
+      }
+    });
+  }
+
+  openCreateQuizModal(): void {
+    this.newQuizTitle = '';
+    this.newQuizDescription = '';
+    this.newQuizPassingScore = 70;
+    this.newQuizSectionId = null;
+    this.quizError = '';
+    this.newQuizQuestions = [
+      {
+        questionText: '',
+        explanation: '',
+        options: [
+          { optionText: '', isCorrect: true },
+          { optionText: '', isCorrect: false },
+          { optionText: '', isCorrect: false },
+          { optionText: '', isCorrect: false }
+        ]
+      }
+    ];
+    this.showCreateQuizModal = true;
+  }
+
+  closeCreateQuizModal(): void {
+    this.showCreateQuizModal = false;
+    this.quizError = '';
+  }
+
+  addQuestionToQuiz(): void {
+    this.newQuizQuestions.push({
+      questionText: '',
+      explanation: '',
+      options: [
+        { optionText: '', isCorrect: true },
+        { optionText: '', isCorrect: false },
+        { optionText: '', isCorrect: false },
+        { optionText: '', isCorrect: false }
+      ]
+    });
+  }
+
+  removeQuestionFromQuiz(index: number): void {
+    if (this.newQuizQuestions.length > 1) {
+      this.newQuizQuestions.splice(index, 1);
+    }
+  }
+
+  setCorrectOption(qIdx: number, oIdx: number): void {
+    this.newQuizQuestions[qIdx].options.forEach((opt, idx) => {
+      opt.isCorrect = (idx === oIdx);
+    });
+  }
+
+  addOptionToQuestion(qIdx: number): void {
+    if (this.newQuizQuestions[qIdx].options.length < 6) {
+      this.newQuizQuestions[qIdx].options.push({
+        optionText: '',
+        isCorrect: false
+      });
+    }
+  }
+
+  removeOptionFromQuestion(qIdx: number, oIdx: number): void {
+    if (this.newQuizQuestions[qIdx].options.length > 2) {
+      const wasCorrect = this.newQuizQuestions[qIdx].options[oIdx].isCorrect;
+      this.newQuizQuestions[qIdx].options.splice(oIdx, 1);
+      if (wasCorrect) {
+        this.newQuizQuestions[qIdx].options[0].isCorrect = true;
+      }
+    }
+  }
+
+  saveQuiz(): void {
+    if (!this.courseId) return;
+    if (!this.newQuizTitle.trim()) {
+      this.quizError = 'Please provide a quiz title.';
+      return;
+    }
+
+    for (let i = 0; i < this.newQuizQuestions.length; i++) {
+      const q = this.newQuizQuestions[i];
+      if (!q.questionText.trim()) {
+        this.quizError = `Question ${i + 1} cannot be empty.`;
+        return;
+      }
+      const hasCorrect = q.options.some(o => o.isCorrect && o.optionText.trim());
+      if (!hasCorrect) {
+        this.quizError = `Question ${i + 1} must have a marked correct option with text.`;
+        return;
+      }
+      for (const opt of q.options) {
+        if (!opt.optionText.trim()) {
+          this.quizError = `All options in Question ${i + 1} must have text.`;
+          return;
+        }
+      }
+    }
+
+    this.isSavingQuiz = true;
+    this.quizError = '';
+
+    const payload = {
+      courseId: this.courseId,
+      sectionId: this.newQuizSectionId || null,
+      title: this.newQuizTitle.trim(),
+      description: this.newQuizDescription.trim() || null,
+      passingScorePercentage: this.newQuizPassingScore || 70,
+      questions: this.newQuizQuestions.map((q, idx) => ({
+        questionText: q.questionText.trim(),
+        explanation: q.explanation.trim() || null,
+        displayOrder: idx + 1,
+        options: q.options.map(opt => ({
+          optionText: opt.optionText.trim(),
+          isCorrect: opt.isCorrect
+        }))
+      }))
+    };
+
+    this.quizService.createQuiz(payload).subscribe({
+      next: () => {
+        this.isSavingQuiz = false;
+        this.closeCreateQuizModal();
+        this.successMessage = 'Mastery Quiz created successfully!';
+        if (this.courseId) {
+          this.loadQuizzes(this.courseId);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to create quiz', err);
+        this.isSavingQuiz = false;
+        this.quizError = err.error?.message || 'Failed to create quiz. Please verify all fields.';
       }
     });
   }

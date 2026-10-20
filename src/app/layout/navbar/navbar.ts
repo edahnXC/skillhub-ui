@@ -16,6 +16,7 @@ export class Navbar implements OnInit, OnDestroy {
   canCreateCourse = false;
   isAdmin = false;
   isStudent = false;
+  isProductSupport = false;
   mobileMenuOpen = false;
   scrolled = false;
 
@@ -35,10 +36,12 @@ export class Navbar implements OnInit, OnDestroy {
         this.canCreateCourse = roles.includes('Instructor');
         this.isAdmin = roles.includes('SuperAdmin') || roles.includes('SubAdmin') || roles.includes('ProductSupport');
         this.isStudent = roles.includes('Student');
+        this.isProductSupport = roles.includes('ProductSupport');
       } else {
         this.canCreateCourse = false;
         this.isAdmin = false;
         this.isStudent = false;
+        this.isProductSupport = false;
       }
     });
 

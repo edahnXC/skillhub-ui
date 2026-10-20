@@ -68,9 +68,15 @@ export class CourseCreate implements OnInit {
     this.isSubmitting = true;
 
     this.courseService.createCourse(this.courseForm.value).subscribe({
-      next: () => {
-        alert('Course created successfully!');
-        this.router.navigate(['/courses']);
+      next: (createdCourse: any) => {
+        const id = createdCourse?.id;
+        if (id) {
+          this.router.navigate(['/courses', id, 'edit'], {
+            queryParams: { tab: 'curriculum', created: 'true' }
+          });
+        } else {
+          this.router.navigate(['/courses']);
+        }
       },
       error: (err) => {
         console.error(err);

@@ -34,7 +34,7 @@
           </a>
         }
 
-        @if (isLoggedIn) {
+        @if (isLoggedIn && !isProductSupport) {
           <a routerLink="/support" routerLinkActive="active" class="nav-link">Support</a>
         }
     </nav>
@@ -74,9 +74,11 @@
                 </a>
               }
               
-              <a routerLink="/support" class="dropdown-item" (click)="closeUserDropdown()">
-                <span class="dropdown-icon">💬</span> Help & Support
-              </a>
+              @if (!isProductSupport) {
+                <a routerLink="/support" class="dropdown-item" (click)="closeUserDropdown()">
+                  <span class="dropdown-icon">💬</span> Help & Support
+                </a>
+              }
 
               <a routerLink="/settings" class="dropdown-item" (click)="closeUserDropdown()">
                 <span class="dropdown-icon">⚙️</span> Account Settings
@@ -126,7 +128,9 @@
         @if (isStudent) {
           <a routerLink="/my-learning" class="mobile-link" (click)="toggleMobileMenu()">📚 My Learning</a>
         }
-        <a routerLink="/support" class="mobile-link" (click)="toggleMobileMenu()">💬 Help & Support</a>
+        @if (!isProductSupport) {
+          <a routerLink="/support" class="mobile-link" (click)="toggleMobileMenu()">💬 Help & Support</a>
+        }
         <a routerLink="/settings" class="mobile-link" (click)="toggleMobileMenu()">⚙️ Account Settings</a>
         @if (isAdmin) {
           <a routerLink="/admin" class="mobile-link admin-link" (click)="toggleMobileMenu()">🛡️ Admin Panel</a>

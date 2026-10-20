@@ -21,6 +21,15 @@
       </div>
     </div>
 
+    @if (newlyCreated) {
+      <div class="alert-success-banner animate-fade-in-up">
+        <span class="banner-icon">🎉</span>
+        <div class="banner-text">
+          <strong>Course Created Successfully!</strong> Next Step: Organize your course curriculum by adding sections, lectures, and mastery assessments below.
+        </div>
+      </div>
+    }
+
     <!-- Navigation Tabs -->
     <div class="tabs-nav">
       <button
@@ -38,6 +47,16 @@
         📚 Curriculum Builder
         @if (sections.length > 0) {
           <span class="tab-badge">{{ sections.length }}</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'quizzes'"
+        (click)="setTab('quizzes')">
+        🎓 Quizzes & Assessments
+        @if (quizzes.length > 0) {
+          <span class="tab-badge">{{ quizzes.length }}</span>
         }
       </button>
     </div>
@@ -381,6 +400,248 @@
         </div>
       }
 
+      <!-- ══════════════════════════════════════════════════════ -->
+      <!-- TAB 3: QUIZZES & ASSESSMENTS                           -->
+      <!-- ══════════════════════════════════════════════════════ -->
+      @if (activeTab === 'quizzes') {
+        <div class="curriculum-builder-container">
+
+          <!-- Add Quiz Banner Card -->
+          <div class="builder-add-section-card">
+            <div class="quiz-banner-row">
+              <div>
+                <h4>🎓 Course Quizzes &amp; Mastery Assessments</h4>
+                <p class="quiz-subtext">Students must score ≥ 70% on mastery quizzes to unlock their verified completion certificate.</p>
+              </div>
+              <button
+                type="button"
+                class="btn-primary"
+                (click)="openCreateQuizModal()">
+                + Create Mastery Quiz
+              </button>
+            </div>
+          </div>
+
+          @if (isLoadingQuizzes) {
+            <div class="state-container">
+              <div class="spinner"></div>
+              <p>Loading course quizzes...</p>
+            </div>
+          } @else if (quizzes.length > 0) {
+            <div class="sections-builder-list">
+              @for (quiz of quizzes; track quiz.id; let qIdx = $index) {
+                <div class="section-card">
+                  <div class="section-header-bar">
+                    <div class="section-info">
+                      <span class="section-badge">Quiz {{ qIdx + 1 }}</span>
+                      <h3 class="section-heading">{{ quiz.title }}</h3>
+                      <span class="lecture-count-tag">
+                        {{ quiz.totalQuestions }} {{ quiz.totalQuestions === 1 ? 'question' : 'questions' }} • Passing Score: {{ quiz.passingScorePercentage }}%
+                      </span>
+                    </div>
+                  </div>
+
+                  @if (quiz.description) {
+                    <p class="quiz-card-desc">{{ quiz.description }}</p>
+                  }
+
+                  <div class="lessons-container">
+                    @for (q of quiz.questions; track q.id; let qNum = $index) {
+                      <div class="lesson-builder-card">
+                        <div class="lesson-header-row">
+                          <div class="lesson-left">
+                            <span class="play-icon">❓</span>
+                            <span class="lesson-num">{{ qNum + 1 }}.</span>
+                            <span class="lesson-name">{{ q.questionText }}</span>
+                          </div>
+                        </div>
+                        <div class="quiz-options-list">
+                          @for (opt of q.options; track opt.id) {
+                            <div class="quiz-option-pill">
+                              <span class="opt-bullet">•</span> {{ opt.optionText }}
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="state-container empty-curriculum-state">
+              <div class="empty-icon">📝</div>
+              <h3>No Quizzes Created Yet</h3>
+              <p>Create interactive knowledge checks and certification assessments for students.</p>
+              <button
+                type="button"
+                class="btn-primary-sm"
+                (click)="openCreateQuizModal()">
+                + Create First Quiz
+              </button>
+            </div>
+          }
+
+        </div>
+      }
+
     }
   </div>
 </div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- MODAL: CREATE MASTERY QUIZ                               -->
+<!-- ════════════════════════════════════════════════════════ -->
+@if (showCreateQuizModal) {
+  <div class="modal-backdrop" (click)="closeCreateQuizModal()">
+    <div class="modal-card quiz-builder-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>🎓 Create Course Mastery Quiz</h3>
+          <p>Add assessment questions and define correct answers for student grading.</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeCreateQuizModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        @if (quizError) {
+          <div class="alert-error mb-3">
+            ⚠️ {{ quizError }}
+          </div>
+        }
+
+        <!-- Quiz Meta -->
+        <div class="form-group mb-3">
+          <label>Quiz Title <span class="field-required">*</span></label>
+          <input
+            type="text"
+            [(ngModel)]="newQuizTitle"
+            placeholder="e.g. Module 1 Mastery Assessment: Core Fundamentals" />
+        </div>
+
+        <div class="form-row mb-3">
+          <div class="form-group flex-1">
+            <label>Description / Instructions</label>
+            <input
+              type="text"
+              [(ngModel)]="newQuizDescription"
+              placeholder="e.g. 10 questions covering Docker commands and container orchestration." />
+          </div>
+
+          <div class="form-group w-120">
+            <label>Passing Score (%)</label>
+            <input
+              type="number"
+              [(ngModel)]="newQuizPassingScore"
+              min="10"
+              max="100" />
+          </div>
+        </div>
+
+        <!-- Section Link (Optional) -->
+        @if (sections.length > 0) {
+          <div class="form-group mb-4">
+            <label>Link to Section (Optional)</label>
+            <select [(ngModel)]="newQuizSectionId">
+              <option [ngValue]="null">Entire Course / Final Exam</option>
+              @for (sec of sections; track sec.id) {
+                <option [ngValue]="sec.id">{{ sec.title }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <hr class="modal-divider" />
+
+        <!-- Questions List -->
+        <div class="quiz-questions-header">
+          <h4>Questions ({{ newQuizQuestions.length }})</h4>
+          <button type="button" class="btn-text-sm" (click)="addQuestionToQuiz()">
+            + Add Another Question
+          </button>
+        </div>
+
+        @for (q of newQuizQuestions; track $index; let qIdx = $index) {
+          <div class="quiz-question-box">
+            <div class="question-header">
+              <span class="q-badge">Q{{ qIdx + 1 }}</span>
+              <input
+                type="text"
+                class="q-input"
+                [(ngModel)]="q.questionText"
+                placeholder="Type your question here..." />
+              @if (newQuizQuestions.length > 1) {
+                <button
+                  type="button"
+                  class="btn-icon-danger"
+                  (click)="removeQuestionFromQuiz(qIdx)"
+                  title="Remove this question">
+                  ✕
+                </button>
+              }
+            </div>
+
+            <!-- Options -->
+            <div class="options-container">
+              <div class="options-hint">Select the radio button next to the <strong>correct answer</strong>:</div>
+              @for (opt of q.options; track $index; let oIdx = $index) {
+                <div class="option-row" [class.correct-option]="opt.isCorrect">
+                  <input
+                    type="radio"
+                    [name]="'correct_q_' + qIdx"
+                    [checked]="opt.isCorrect"
+                    (change)="setCorrectOption(qIdx, oIdx)"
+                    title="Mark as correct answer" />
+                  <input
+                    type="text"
+                    class="opt-input"
+                    [(ngModel)]="opt.optionText"
+                    [placeholder]="'Option ' + (oIdx + 1)" />
+                  @if (q.options.length > 2) {
+                    <button
+                      type="button"
+                      class="btn-remove-opt"
+                      (click)="removeOptionFromQuestion(qIdx, oIdx)"
+                      title="Remove option">
+                      ✕
+                    </button>
+                  }
+                </div>
+              }
+              @if (q.options.length < 6) {
+                <button
+                  type="button"
+                  class="btn-text-sm mt-1"
+                  (click)="addOptionToQuestion(qIdx)">
+                  + Add Option
+                </button>
+              }
+            </div>
+
+            <!-- Explanation (Optional) -->
+            <div class="form-group mt-2">
+              <input
+                type="text"
+                class="explanation-input"
+                [(ngModel)]="q.explanation"
+                placeholder="Optional explanation shown to student after submitting..." />
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeCreateQuizModal()">Cancel</button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="isSavingQuiz"
+          (click)="saveQuiz()">
+          {{ isSavingQuiz ? 'Saving Quiz...' : 'Save & Publish Quiz' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
