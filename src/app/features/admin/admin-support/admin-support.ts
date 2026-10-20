@@ -46,10 +46,16 @@ export class AdminSupport implements OnInit {
   replyText = '';
   isInternalNote = false;
 
-  // Role-based permissions
+  // Role-based permissions & Queue Filters
   isSuperAdmin = false;
   isProductSupport = false;
   isSubAdmin = false;
+  filterAssignedToMe = false;
+
+  get isAssignedToCurrentUser(): boolean {
+    if (!this.selectedTicket || !this.currentUserId) return false;
+    return this.selectedTicket.assignedAdminId === this.currentUserId;
+  }
 
   get canAssign(): boolean {
     return this.isProductSupport;
@@ -57,12 +63,16 @@ export class AdminSupport implements OnInit {
 
   get canChangeStatus(): boolean {
     if (this.isSuperAdmin) return false;
-    return this.isProductSupport || this.isSubAdmin;
+    if (this.isProductSupport) return true;
+    if (this.isSubAdmin) return this.isAssignedToCurrentUser;
+    return false;
   }
 
   get canReply(): boolean {
     if (this.isSuperAdmin) return false;
-    return this.isProductSupport || this.isSubAdmin;
+    if (this.isProductSupport) return true;
+    if (this.isSubAdmin) return this.isAssignedToCurrentUser;
+    return false;
   }
 
   currentUserId: number | null = null;
@@ -130,6 +140,10 @@ export class AdminSupport implements OnInit {
         this.isSuperAdmin = roles.includes('SuperAdmin');
         this.isProductSupport = roles.includes('ProductSupport');
         this.isSubAdmin = roles.includes('SubAdmin');
+        // If SubAdmin without ProductSupport, default filter to Assigned to Me
+        if (this.isSubAdmin && !this.isProductSupport && !this.isSuperAdmin) {
+          this.filterAssignedToMe = true;
+        }
       } else {
         this.isSuperAdmin = false;
         this.isProductSupport = false;
@@ -140,12 +154,18 @@ export class AdminSupport implements OnInit {
     this.loadStaffUsers();
   }
 
+  toggleAssignedToMe(): void {
+    this.filterAssignedToMe = !this.filterAssignedToMe;
+    this.loadTickets();
+  }
+
   loadTickets(): void {
     this.isLoadingList = true;
     this.supportService.getAdminQueue({
       status: this.filterStatus,
       priority: this.filterPriority,
       category: this.filterCategory,
+      assignedToId: this.filterAssignedToMe && this.currentUserId ? this.currentUserId : null,
       search: this.searchQuery
     }).subscribe({
       next: (data) => {

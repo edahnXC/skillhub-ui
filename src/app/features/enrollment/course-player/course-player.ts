@@ -350,7 +350,134 @@ export class CoursePlayer implements OnInit {
   }
 
   printCertificate(): void {
-    window.print();
+    const certElem = document.getElementById('printable-certificate');
+    if (!certElem) {
+      window.print();
+      return;
+    }
+
+    const studentName = this.learningData?.certificate?.studentName || 'Student';
+    const certNumber = this.learningData?.certificate?.certificateNumber || 'CERT';
+    const cleanDocTitle = `SkillHub-Certificate-${studentName.replace(/[^a-zA-Z0-9]/g, '_')}-${certNumber}`;
+    const originalTitle = document.title;
+    document.title = cleanDocTitle;
+
+    // Create an isolated hidden iframe for printing ONLY the certificate
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.id = 'certificate-print-frame';
+
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      document.body.removeChild(iframe);
+      window.print();
+      document.title = originalTitle;
+      return;
+    }
+
+    // Collect all stylesheets and style definitions from the main document
+    let styles = '';
+    document.querySelectorAll('link[rel="stylesheet"], style').forEach(el => {
+      styles += el.outerHTML;
+    });
+
+    const certHtml = certElem.outerHTML;
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <title>${cleanDocTitle}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Dancing+Script:wght@700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+          ${styles}
+          <style>
+            @page {
+              size: landscape;
+              margin: 0;
+            }
+            *, *::before, *::after {
+              box-sizing: border-box;
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 100vw !important;
+              height: 100vh !important;
+              background: #ffffff !important;
+              overflow: hidden !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+            }
+            #printable-certificate {
+              position: relative !important;
+              width: 100vw !important;
+              height: 100vh !important;
+              max-width: 100vw !important;
+              max-height: 100vh !important;
+              margin: 0 !important;
+              border-radius: 0 !important;
+              box-shadow: none !important;
+              border: 14px solid #0f172a !important;
+              outline: 3px solid #d97706 !important;
+              outline-offset: -8px !important;
+              padding: 12px !important;
+              background: radial-gradient(ellipse at center, #ffffff 0%, #fdfcf7 60%, #f7f1e5 100%) !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: center !important;
+              box-sizing: border-box !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+            .cert-inner-border {
+              height: 100% !important;
+              box-sizing: border-box !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: space-between !important;
+              padding: 24px 36px 20px !important;
+            }
+          </style>
+        </head>
+        <body>
+          ${certHtml}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    // Trigger printing once parsed
+    setTimeout(() => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (err) {
+        console.error('Print failed', err);
+        window.print();
+      } finally {
+        document.title = originalTitle;
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }, 3000);
+      }
+    }, 400);
   }
 
   triggerToast(msg: string): void {

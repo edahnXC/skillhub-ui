@@ -51,6 +51,17 @@
         (click)="filterStatus = 'Resolved'; loadTickets()">
         Resolved
       </button>
+
+      @if (isSubAdmin || isProductSupport) {
+        <button 
+          type="button" 
+          class="filter-pill assigned-filter-pill" 
+          [class.active]="filterAssignedToMe" 
+          (click)="toggleAssignedToMe()"
+          title="Filter tickets assigned to your staff profile">
+          👤 Assigned to Me
+        </button>
+      }
     </div>
   </div>
 
@@ -153,6 +164,13 @@
 
               <div class="item-meta">
                 <span class="category-tag">{{ ticket.category }}</span>
+                @if (ticket.assignedAdminId === currentUserId) {
+                  <span class="assigned-tag assigned-me">★ You</span>
+                } @else if (ticket.assignedAdminName) {
+                  <span class="assigned-tag assigned-other">🛡️ {{ ticket.assignedAdminName }}</span>
+                } @else {
+                  <span class="assigned-tag unassigned-tag">⏳ Unassigned</span>
+                }
                 <span class="time-ago">{{ ticket.createdAt | date:'shortDate' }}</span>
               </div>
 
@@ -188,6 +206,27 @@
           </div>
         }
 
+        <!-- SubAdmin Notice Strip (Assigned vs Unassigned) -->
+        @if (isSubAdmin && !isProductSupport && !isSuperAdmin) {
+          @if (isAssignedToCurrentUser) {
+            <div class="subadmin-notice-strip assigned-strip">
+              <span class="strip-icon">🛡️</span>
+              <div class="strip-text">
+                <strong>Assigned to You:</strong>
+                <span>Product Support assigned you to resolve this ticket. You have full permission to update its status, leave internal triage notes, and send responses.</span>
+              </div>
+            </div>
+          } @else {
+            <div class="subadmin-notice-strip readonly-strip">
+              <span class="strip-icon">🔒</span>
+              <div class="strip-text">
+                <strong>Assigned to {{ selectedTicket.assignedAdminName || 'Product Support (Unassigned)' }}:</strong>
+                <span>As a SubAdmin, you have read-only access to this ticket. Status updates and customer responses are handled by the assigned staff or Product Support.</span>
+              </div>
+            </div>
+          }
+        }
+
         <!-- Ticket Action Toolbar -->
         <div class="workspace-toolbar">
           <div class="toolbar-left">
@@ -207,7 +246,7 @@
                   [ngClass]="getCurrentStatusMeta(selectedTicket.status).pillClass"
                   (click)="toggleStatusDropdown($event)"
                   [disabled]="isUpdatingStatus || !canChangeStatus"
-                  [title]="canChangeStatus ? 'Click to change ticket lifecycle status' : 'Status changes are managed by Product Support and assigned Admins'"
+                  [title]="canChangeStatus ? 'Click to change ticket lifecycle status' : (isSubAdmin ? 'Only the assigned SubAdmin or Product Support can change status' : 'Status changes are managed by Product Support and assigned Admins')"
                   aria-haspopup="listbox"
                   [attr.aria-expanded]="statusDropdownOpen"
                   id="ticketStatusDropdownBtn">
@@ -420,13 +459,21 @@
             </div>
           </div>
         } @else {
-          <!-- Read-Only Banner for SuperAdmin -->
+          <!-- Read-Only Banner for SuperAdmin or Unassigned SubAdmin -->
           <div class="composer-card readonly-composer-card">
             <div class="readonly-content">
-              <span class="lock-icon">👁️</span>
+              <span class="lock-icon">🔒</span>
               <div>
-                <h4>SuperAdmin Read-Only Oversight</h4>
-                <p>SuperAdmins have audit permissions to view all tickets, messages, and statuses across the platform. Ticket assignments and query resolutions are managed directly by Product Support and assigned Admins.</p>
+                @if (isSuperAdmin) {
+                  <h4>SuperAdmin Read-Only Oversight</h4>
+                  <p>SuperAdmins have audit permissions to view all tickets, messages, and statuses across the platform. Ticket assignments and query resolutions are managed directly by Product Support and assigned Admins.</p>
+                } @else if (isSubAdmin && !isAssignedToCurrentUser) {
+                  <h4>Read-Only Access for SubAdmin</h4>
+                  <p>This ticket is currently assigned to <strong>{{ selectedTicket.assignedAdminName || 'Product Support triage' }}</strong>. SubAdmins can only reply and update the status of tickets assigned to them by Product Support.</p>
+                } @else {
+                  <h4>Read-Only Oversight</h4>
+                  <p>You do not have permission to post replies or modify this ticket.</p>
+                }
               </div>
             </div>
           </div>

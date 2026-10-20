@@ -637,3 +637,61 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.3);
   color: #047857;
 }
+
+/* ── Global Certificate Print Directives ──────────────── */
+@media print {
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide outer application layout, navbars, and player UI during print */
+  app-navbar,
+  app-footer,
+  .player-header,
+  .player-main-area,
+  .cert-modal-header,
+  .cert-modal-actions,
+  .toast-banner {
+    display: none !important;
+  }
+
+  .modal-backdrop {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .certificate-modal-card {
+    position: static !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+  }
+
+  #printable-certificate {
+    box-shadow: none !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

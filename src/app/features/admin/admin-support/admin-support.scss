@@ -74,6 +74,16 @@
         color: #0f172a;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       }
+
+      &.assigned-filter-pill {
+        border: 1px dashed #cbd5e1;
+        &.active {
+          background: #4f46e5;
+          color: #ffffff;
+          border-color: #4f46e5;
+          box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+        }
+      }
     }
   }
 }
@@ -256,6 +266,31 @@
           background: #f1f5f9;
           padding: 0.15rem 0.45rem;
           border-radius: 4px;
+        }
+
+        .assigned-tag {
+          font-size: 0.72rem;
+          font-weight: 700;
+          padding: 0.15rem 0.5rem;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+
+          &.assigned-me {
+            background: rgba(79, 70, 229, 0.12);
+            color: #4338ca;
+            border: 1px solid rgba(79, 70, 229, 0.25);
+          }
+
+          &.assigned-other {
+            background: #f1f5f9;
+            color: #475569;
+          }
+
+          &.unassigned-tag {
+            background: rgba(245, 158, 11, 0.1);
+            color: #b45309;
+          }
         }
       }
     }
@@ -922,6 +957,8 @@
   padding: 0.75rem 1.25rem;
   font-size: 0.85rem;
   color: #475569;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 
   .strip-icon {
     font-size: 1.1rem;
@@ -933,6 +970,44 @@
       color: #1e293b;
       margin-right: 0.35rem;
     }
+  }
+}
+
+.subadmin-notice-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+
+  .strip-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .strip-text {
+    strong {
+      margin-right: 0.35rem;
+    }
+    span {
+      line-height: 1.45;
+    }
+  }
+
+  &.assigned-strip {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    strong { color: #047857; }
+  }
+
+  &.readonly-strip {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    strong { color: #1e293b; }
   }
 }
 
