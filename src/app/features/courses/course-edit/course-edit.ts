@@ -5,6 +5,8 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CourseService } from '../services/course.service';
 import { CurriculumService } from '../services/curriculum.service';
 import { QuizService } from '../../enrollment/services/quiz.service';
+import { AuthService } from '../../auth/services/auth.service';
+import { AdminService } from '../../admin/services/admin.service';
 import { Quiz } from '../../enrollment/models/quiz.model';
 import { CourseCategory } from '../models/course-category.model';
 import { CourseSection, CourseLesson, CreateSectionRequest, CreateLessonRequest, CreateLessonResourceRequest } from '../models/curriculum.model';
@@ -30,6 +32,10 @@ export class CourseEdit implements OnInit {
   courseId: number | null = null;
   newlyCreated = false;
   
+  isAdmin = false;
+  isApproving = false;
+  isSubmittedForReview = false;
+
   selectedFile: File | null = null;
   imagePreview: string | null = null;
   isUploading = false;
@@ -73,9 +79,12 @@ export class CourseEdit implements OnInit {
     private courseService: CourseService,
     private curriculumService: CurriculumService,
     private quizService: QuizService,
+    private authService: AuthService,
+    private adminService: AdminService,
     private router: Router,
     private route: ActivatedRoute
   ) {
+    this.isAdmin = this.authService.isAdmin();
     this.courseForm = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(200)]],
       categoryId: ['', Validators.required],
@@ -153,8 +162,69 @@ export class CourseEdit implements OnInit {
       this.courseForm.patchValue({ isPublished: false });
       return;
     }
+
+    if (publish && !this.isAdmin) {
+      // Instructors cannot self-publish; submit for platform admin approval
+      this.submitForAdminApproval();
+      return;
+    }
+
     this.courseForm.patchValue({ isPublished: publish });
     this.onSubmit();
+  }
+
+  submitForAdminApproval(): void {
+    if (!this.canPublish) {
+      this.error = 'All readiness requirements (curriculum sections, video lectures, and mastery quizzes) must be satisfied before submitting for admin review.';
+      return;
+    }
+    this.isSubmitting = true;
+    this.error = '';
+    this.successMessage = '';
+    
+    // Ensure course details are updated and saved, leaving isPublished = false until admin approves
+    this.courseForm.patchValue({ isPublished: false });
+    
+    const formValues = this.courseForm.value;
+    const request = {
+      id: this.courseId!,
+      ...formValues,
+      categoryId: parseInt(formValues.categoryId, 10),
+      thumbnailUrl: this.imagePreview || ''
+    };
+
+    this.courseService.updateCourse(request).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.isSubmittedForReview = true;
+        this.successMessage = '🎉 Course submitted for admin review! A platform administrator will inspect the curriculum and video lectures before approving it for student enrollment.';
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.error = 'Failed to submit course for approval. Please try again.';
+        console.error(err);
+      }
+    });
+  }
+
+  adminApproveAndPublish(): void {
+    if (!this.courseId || this.isApproving) return;
+    this.isApproving = true;
+    this.error = '';
+    this.successMessage = '';
+
+    this.adminService.approveCourse(this.courseId).subscribe({
+      next: () => {
+        this.isApproving = false;
+        this.courseForm.patchValue({ isPublished: true });
+        this.successMessage = '🎉 Course approved and published live! It is now accessible to all students in the catalog.';
+      },
+      error: (err) => {
+        this.isApproving = false;
+        this.error = 'Failed to approve course.';
+        console.error(err);
+      }
+    });
   }
 
   loadCategories(): void {

@@ -76,6 +76,9 @@
                     </svg>
                   </div>
                 }
+                @if (!course.isPublished) {
+                  <span class="badge-draft">⏳ Draft / Pending Approval</span>
+                }
               </div>
               <div class="course-content">
                 <h3 class="course-title">{{ course.title }}</h3>

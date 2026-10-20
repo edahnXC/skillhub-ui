@@ -49,6 +49,29 @@
         <p>{{ error }}</p>
         <a routerLink="/courses" class="btn-primary">Browse All Courses</a>
       </div>
+    } @else if (course && !course.isPublished && !canViewUnpublishedCourse) {
+      <!-- ── Pending Administrative Approval Guard for Students & Guests ── -->
+      <div class="pending-approval-card">
+        <div class="pending-icon">⏳</div>
+        <h2>Course Under Administrative Review</h2>
+        <p class="pending-subtitle">
+          This course has been authored and is currently undergoing quality inspection and approval by the SkillHub administrative team. It is not yet open to students.
+        </p>
+        <div class="pending-info-box">
+          <div class="pending-info-row">
+            <span class="info-icon">🔍</span>
+            <span>All syllabus lectures, video materials, and assessment quizzes must pass platform moderation before going live.</span>
+          </div>
+          <div class="pending-info-row">
+            <span class="info-icon">🚀</span>
+            <span>Once approved by administrators, this course will become immediately available in the public catalog for student enrollment.</span>
+          </div>
+        </div>
+        <div class="pending-actions">
+          <a routerLink="/courses" class="btn-primary">Explore Available Courses →</a>
+          <a routerLink="/home" class="btn-secondary">Return Home</a>
+        </div>
+      </div>
     } @else if (course) {
       <div class="course-detail-container">
         

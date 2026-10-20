@@ -186,17 +186,17 @@
             </div>
             
             <!-- ── Publication & Quality Gate Card ────────────── -->
-            <div class="publication-gate-card" [class.ready]="canPublish" [class.is-live]="isPublished">
+            <div class="publication-gate-card" [class.ready]="canPublish" [class.is-live]="isPublished" [class.is-review]="!isPublished && isSubmittedForReview">
               <div class="gate-header">
                 <div class="gate-title-group">
-                  <span class="gate-icon">{{ isPublished ? '🟢' : (canPublish ? '🚀' : '🔒') }}</span>
+                  <span class="gate-icon">{{ isPublished ? '🟢' : (isSubmittedForReview ? '⏳' : (canPublish ? '🚀' : '🔒')) }}</span>
                   <div>
                     <h3>Publication &amp; Quality Readiness Gate</h3>
-                    <p>{{ isPublished ? 'Your course is live and publicly available in the catalog for student enrollment.' : 'Courses require a syllabus structure, video lectures, and a mastery assessment quiz before going live.' }}</p>
+                    <p>{{ isPublished ? 'Your course is approved and live in the catalog for student enrollment.' : (isSubmittedForReview ? 'Your course is submitted for admin review. SuperAdmins/SubAdmins will inspect and approve your course before it goes live.' : 'Courses require a syllabus structure, video lectures, and a mastery assessment quiz before going live.') }}</p>
                   </div>
                 </div>
-                <div class="gate-badge" [class.live]="isPublished" [class.draft]="!isPublished">
-                  {{ isPublished ? 'LIVE & PUBLISHED' : 'UNPUBLISHED DRAFT' }}
+                <div class="gate-badge" [class.live]="isPublished" [class.review]="!isPublished && isSubmittedForReview" [class.draft]="!isPublished && !isSubmittedForReview">
+                  {{ isPublished ? 'LIVE & PUBLISHED' : (isSubmittedForReview ? 'SUBMITTED FOR REVIEW' : 'UNPUBLISHED DRAFT') }}
                 </div>
               </div>
 
@@ -243,30 +243,66 @@
               <div class="gate-actions-row">
                 @if (isPublished) {
                   <div class="published-state-box">
-                    <span>🌟 Your course is currently live! Any curriculum edits you make update the classroom in real time.</span>
+                    <span>🌟 Your course is approved and currently live! Any curriculum edits update the classroom in real time.</span>
                     <button type="button" class="btn-unpublish" (click)="togglePublish(false)" [disabled]="isSubmitting">
                       {{ isSubmitting ? 'Updating...' : 'Revert to Unpublished Draft' }}
                     </button>
                   </div>
-                } @else {
+                } @else if (isAdmin) {
+                  <!-- Administrator Direct Action -->
                   @if (canPublish) {
                     <div class="publish-ready-box">
                       <div class="ready-text">
-                        <strong>🎉 Ready for Launch!</strong>
-                        <span>All curriculum, video, and assessment requirements are satisfied.</span>
+                        <strong>🛡️ Administrator Quality Clearance</strong>
+                        <span>All curriculum, video, and assessment requirements are satisfied. You can approve and publish this course live.</span>
                       </div>
-                      <button type="button" class="btn-publish-live" (click)="togglePublish(true)" [disabled]="isSubmitting">
-                        {{ isSubmitting ? 'Publishing...' : '🚀 Publish Course Live to Students' }}
+                      <button type="button" class="btn-publish-live" (click)="adminApproveAndPublish()" [disabled]="isApproving">
+                        {{ isApproving ? 'Approving...' : '✅ Approve & Publish Course Live' }}
                       </button>
                     </div>
                   } @else {
                     <div class="publish-locked-box">
                       <div class="locked-text">
-                        <strong>🔒 Publishing Locked</strong>
-                        <span>Fulfill all 3 checklist items above to enable publishing.</span>
+                        <strong>🔒 Admin Publishing Locked</strong>
+                        <span>Course does not yet meet all 3 quality checklist items above.</span>
                       </div>
                       <button type="button" class="btn-publish-disabled" disabled title="Complete syllabus, videos, and quizzes to unlock publishing">
                         Publishing Locked
+                      </button>
+                    </div>
+                  }
+                } @else {
+                  <!-- Instructor Submission Workflow -->
+                  @if (canPublish) {
+                    @if (isSubmittedForReview) {
+                      <div class="review-submitted-box">
+                        <div class="review-text">
+                          <strong>⏳ Submitted for Platform Admin Approval</strong>
+                          <span>Course is under review by administrators. Students cannot view or enroll until an admin approves it.</span>
+                        </div>
+                        <button type="button" class="btn-submit-approval" (click)="submitForAdminApproval()" [disabled]="isSubmitting">
+                          {{ isSubmitting ? 'Updating...' : '📤 Update & Resubmit for Review' }}
+                        </button>
+                      </div>
+                    } @else {
+                      <div class="publish-ready-box">
+                        <div class="ready-text">
+                          <strong>🎉 Ready for Platform Review!</strong>
+                          <span>All curriculum, video, and assessment requirements are satisfied. Submit your course for admin review.</span>
+                        </div>
+                        <button type="button" class="btn-submit-approval" (click)="submitForAdminApproval()" [disabled]="isSubmitting">
+                          {{ isSubmitting ? 'Submitting...' : '📤 Submit for Admin Approval' }}
+                        </button>
+                      </div>
+                    }
+                  } @else {
+                    <div class="publish-locked-box">
+                      <div class="locked-text">
+                        <strong>🔒 Submission Locked</strong>
+                        <span>Fulfill all 3 checklist items above to submit this course for platform admin approval.</span>
+                      </div>
+                      <button type="button" class="btn-publish-disabled" disabled title="Complete syllabus, videos, and quizzes to unlock submission">
+                        Submission Locked
                       </button>
                     </div>
                   }

@@ -172,6 +172,10 @@ export class CourseDetail implements OnInit {
     return !!(this.course && this.currentUserId && this.course.instructorId === this.currentUserId);
   }
 
+  get canViewUnpublishedCourse(): boolean {
+    return this.isApprover || this.isOwner;
+  }
+
   get totalLessonsCount(): number {
     return this.sections.reduce((acc, sec) => acc + (sec.lessons ? sec.lessons.length : 0), 0);
   }
@@ -232,6 +236,11 @@ export class CourseDetail implements OnInit {
     }
 
     if (!this.course) return;
+
+    if (!this.course.isPublished) {
+      alert('This course is currently pending administrative review and approval. It is not open for student enrollment.');
+      return;
+    }
 
     const priceToPay = (this.course.discountPrice !== null && this.course.discountPrice !== undefined && this.course.discountPrice > 0)
       ? this.course.discountPrice

@@ -422,6 +422,9 @@
   background: linear-gradient(135deg, #312e81 0%, #4338ca 50%, #6d28d9 100%);
   border-radius: var(--radius-xl);
   padding: 64px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   color: #ffffff;
   box-shadow: var(--shadow-xl);
@@ -433,6 +436,8 @@
     font-weight: 800;
     margin: 0 0 14px;
     letter-spacing: -0.02em;
+    text-align: center;
+    width: 100%;
 
     @media (max-width: 768px) {
       font-size: 28px;
@@ -442,9 +447,11 @@
   p {
     font-size: 18px;
     opacity: 0.9;
-    margin: 0 0 32px;
-    max-width: 540px;
-    margin-x: auto;
+    margin: 0 auto 32px;
+    max-width: 580px;
+    text-align: center;
+    line-height: 1.6;
+    width: 100%;
   }
 
   .cta-actions {

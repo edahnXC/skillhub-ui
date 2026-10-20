@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InstructorService } from '../services/instructor.service';
 import { CourseService } from '../../courses/services/course.service';
+import { AuthService } from '../../auth/services/auth.service';
 import { Instructor } from '../instructor.model';
 import { Course } from '../../courses/course.model';
 
@@ -18,6 +19,8 @@ export class InstructorDetail implements OnInit {
   courses: Course[] = [];
   isLoading = true;
   error: string | null = null;
+  isAdmin = false;
+  currentUserId: number | null = null;
 
   private readonly gradients = [
     'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -33,8 +36,12 @@ export class InstructorDetail implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private instructorService: InstructorService,
-    private courseService: CourseService
-  ) {}
+    private courseService: CourseService,
+    private authService: AuthService
+  ) {
+    this.isAdmin = this.authService.isAdmin();
+    this.currentUserId = this.authService.getUserId();
+  }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -59,7 +66,10 @@ export class InstructorDetail implements OnInit {
         // Fetch courses for this instructor
         this.courseService.getCoursesByInstructorId(instructorId).subscribe({
           next: (courses) => {
-            this.courses = courses;
+            // Quality Guard: Regular students/users must ONLY see approved/published courses.
+            // Admins or the authoring instructor themselves can see unpublished drafts.
+            const canViewDrafts = this.isAdmin || (this.currentUserId === instructorId);
+            this.courses = canViewDrafts ? courses : courses.filter(c => c.isPublished);
             this.isLoading = false;
           },
           error: (err) => {

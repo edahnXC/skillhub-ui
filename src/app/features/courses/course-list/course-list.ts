@@ -20,6 +20,7 @@ export class CourseList implements OnInit, OnDestroy {
   error: string | null = null;
   isLoggedIn = false;
   canCreateCourse = false;
+  isAdmin = false;
 
   searchQuery = '';
   selectedCategory = 'All';
@@ -51,8 +52,10 @@ export class CourseList implements OnInit, OnDestroy {
     this.rolesSubscription = this.authService.currentRoles$.subscribe(roles => {
       if (Array.isArray(roles)) {
         this.canCreateCourse = roles.includes('Instructor');
+        this.isAdmin = roles.includes('SuperAdmin') || roles.includes('SubAdmin');
       } else {
         this.canCreateCourse = false;
+        this.isAdmin = false;
       }
     });
 
@@ -87,6 +90,11 @@ export class CourseList implements OnInit, OnDestroy {
 
   get filteredCourses(): Course[] {
     return this.courses.filter(course => {
+      // Platform Quality Guard: Regular students and visitors must ONLY see approved & published courses.
+      if (!this.isAdmin && !course.isPublished) {
+        return false;
+      }
+
       const matchesSearch = !this.searchQuery || 
         course.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         course.description?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
