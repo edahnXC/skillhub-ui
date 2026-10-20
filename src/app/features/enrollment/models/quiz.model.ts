@@ -1,3 +1,5 @@
+import { CertificateInfo } from './learning.model';
+
 export interface QuizOption {
   id: number;
   optionText: string;
@@ -29,6 +31,8 @@ export interface QuizAttemptResult {
   passingScorePercentage: number;
   completedAt: string;
   questionFeedback: QuestionFeedback[];
+  isCertificateAwarded?: boolean;
+  certificate?: CertificateInfo | null;
 }
 
 export interface Quiz {

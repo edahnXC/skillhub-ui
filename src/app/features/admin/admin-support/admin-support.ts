@@ -46,6 +46,25 @@ export class AdminSupport implements OnInit {
   replyText = '';
   isInternalNote = false;
 
+  // Role-based permissions
+  isSuperAdmin = false;
+  isProductSupport = false;
+  isSubAdmin = false;
+
+  get canAssign(): boolean {
+    return this.isProductSupport;
+  }
+
+  get canChangeStatus(): boolean {
+    if (this.isSuperAdmin) return false;
+    return this.isProductSupport || this.isSubAdmin;
+  }
+
+  get canReply(): boolean {
+    if (this.isSuperAdmin) return false;
+    return this.isProductSupport || this.isSubAdmin;
+  }
+
   currentUserId: number | null = null;
 
   @HostListener('document:click')
@@ -55,12 +74,14 @@ export class AdminSupport implements OnInit {
 
   toggleStatusDropdown(event?: Event): void {
     if (event) event.stopPropagation();
+    if (!this.canChangeStatus) return;
     this.statusDropdownOpen = !this.statusDropdownOpen;
     if (this.statusDropdownOpen) this.assignDropdownOpen = false;
   }
 
   toggleAssignDropdown(event?: Event): void {
     if (event) event.stopPropagation();
+    if (!this.canAssign) return;
     this.assignDropdownOpen = !this.assignDropdownOpen;
     if (this.assignDropdownOpen) this.statusDropdownOpen = false;
   }
@@ -72,6 +93,7 @@ export class AdminSupport implements OnInit {
 
   selectStatus(newStatus: string): void {
     this.closeDropdowns();
+    if (!this.canChangeStatus) return;
     if (this.selectedTicket && this.selectedTicket.status !== newStatus) {
       this.onStatusChange(newStatus);
     }
@@ -79,6 +101,7 @@ export class AdminSupport implements OnInit {
 
   selectAssignee(adminId: number | null): void {
     this.closeDropdowns();
+    if (!this.canAssign) return;
     if (this.selectedTicket && this.selectedTicket.assignedAdminId !== adminId) {
       this.onAssigneeChange(adminId ? adminId.toString() : '');
     }
@@ -102,6 +125,17 @@ export class AdminSupport implements OnInit {
 
   ngOnInit(): void {
     this.currentUserId = this.authService.getUserId();
+    this.authService.currentRoles$.subscribe(roles => {
+      if (Array.isArray(roles)) {
+        this.isSuperAdmin = roles.includes('SuperAdmin');
+        this.isProductSupport = roles.includes('ProductSupport');
+        this.isSubAdmin = roles.includes('SubAdmin');
+      } else {
+        this.isSuperAdmin = false;
+        this.isProductSupport = false;
+        this.isSubAdmin = false;
+      }
+    });
     this.loadTickets();
     this.loadStaffUsers();
   }
@@ -140,14 +174,12 @@ export class AdminSupport implements OnInit {
   }
 
   loadStaffUsers(): void {
-    this.adminService.getAllUsers().subscribe({
-      next: (users) => {
-        this.staffUsers = users.filter(u => 
-          u.roles && (u.roles.includes('SuperAdmin') || u.roles.includes('SubAdmin'))
-        );
+    this.supportService.getAssignableAdmins().subscribe({
+      next: (admins) => {
+        this.staffUsers = admins;
       },
       error: (err) => {
-        console.error('Failed to load staff members', err);
+        console.error('Failed to load assignable admins', err);
       }
     });
   }

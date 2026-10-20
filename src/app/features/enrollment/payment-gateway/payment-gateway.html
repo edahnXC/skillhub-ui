@@ -1,0 +1,278 @@
+<div class="checkout-page">
+  <div class="container">
+    
+    <!-- Top Trust Header -->
+    <div class="checkout-brand-header">
+      <div class="brand-logo">
+        <span class="logo-icon">⚡</span>
+        <span class="brand-text">SkillHub <strong>Pay</strong></span>
+      </div>
+      <div class="security-badge">
+        <span class="shield-icon">🔒</span>
+        <span>256-bit Bank Grade SSL Encryption</span>
+      </div>
+    </div>
+
+    @if (isLoading) {
+      <div class="checkout-loader">
+        <div class="spinner"></div>
+        <p>Initializing secure checkout gateway...</p>
+      </div>
+    } @else {
+      <div class="checkout-grid">
+        
+        <!-- Left Column: Payment Form -->
+        <div class="payment-card-panel">
+          <div class="panel-header">
+            <h2>Select Payment Method</h2>
+            <p>Complete your payment securely to get instant access</p>
+          </div>
+
+
+          <!-- Payment Tabs -->
+          <div class="payment-tabs">
+            <button 
+              type="button" 
+              class="tab-btn" 
+              [class.active]="paymentMethod === 'card'"
+              (click)="paymentMethod = 'card'">
+              💳 Cards (Credit/Debit)
+            </button>
+            <button 
+              type="button" 
+              class="tab-btn" 
+              [class.active]="paymentMethod === 'upi'"
+              (click)="paymentMethod = 'upi'">
+              📱 UPI / QR Code
+            </button>
+            <button 
+              type="button" 
+              class="tab-btn" 
+              [class.active]="paymentMethod === 'netbanking'"
+              (click)="paymentMethod = 'netbanking'">
+              🏦 Net Banking
+            </button>
+          </div>
+
+          <!-- Tab Content: Card -->
+          @if (paymentMethod === 'card') {
+            <div class="payment-form animate-fade-in">
+              <div class="test-card-banner">
+                <span>Want to test quickly?</span>
+                <button type="button" class="btn-quick-fill" (click)="fillTestCard()">
+                  ⚡ Fill Test Card Details
+                </button>
+              </div>
+
+              <div class="form-group">
+                <label>Card Number</label>
+                <div class="input-with-icon">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="cardNumber" 
+                    (input)="formatCardNumber()"
+                    placeholder="4242 4242 4242 4242" 
+                    maxlength="19"
+                    autocomplete="cc-number">
+                  <div class="card-logos">
+                    <span class="card-tag visa">VISA</span>
+                    <span class="card-tag mc">MC</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Expiry Date</label>
+                  <input 
+                    type="text" 
+                    [(ngModel)]="cardExpiry" 
+                    (input)="formatExpiry()"
+                    placeholder="MM/YY" 
+                    maxlength="5">
+                </div>
+                <div class="form-group">
+                  <label>CVV / CVC</label>
+                  <input 
+                    type="password" 
+                    [(ngModel)]="cardCvc" 
+                    placeholder="123" 
+                    maxlength="4">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Name on Card</label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="cardName" 
+                  placeholder="e.g. John Doe">
+              </div>
+            </div>
+          }
+
+          <!-- Tab Content: UPI -->
+          @if (paymentMethod === 'upi') {
+            <div class="payment-form animate-fade-in">
+              <div class="upi-box">
+                <div class="qr-mock">
+                  <div class="qr-frame">
+                    <span class="qr-label">Scan with GPay / PhonePe / Paytm</span>
+                    <div class="qr-code-graphic">
+                      <svg viewBox="0 0 100 100" width="120" height="120">
+                        <rect width="100" height="100" fill="#fff" />
+                        <rect x="10" y="10" width="25" height="25" fill="#1e293b" />
+                        <rect x="15" y="15" width="15" height="15" fill="#fff" />
+                        <rect x="65" y="10" width="25" height="25" fill="#1e293b" />
+                        <rect x="70" y="15" width="15" height="15" fill="#fff" />
+                        <rect x="10" y="65" width="25" height="25" fill="#1e293b" />
+                        <rect x="15" y="70" width="15" height="15" fill="#fff" />
+                        <circle cx="50" cy="50" r="10" fill="#6366f1" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="upi-divider"><span>OR ENTER VPA</span></div>
+
+                <div class="form-group">
+                  <label>Virtual Payment Address (UPI ID)</label>
+                  <input 
+                    type="text" 
+                    [(ngModel)]="upiId" 
+                    placeholder="student@okaxis or mobile@paytm">
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Tab Content: Net Banking -->
+          @if (paymentMethod === 'netbanking') {
+            <div class="payment-form animate-fade-in">
+              <label class="bank-label">Select Your Bank</label>
+              <div class="bank-grid">
+                <button 
+                  type="button" 
+                  class="bank-chip" 
+                  [class.selected]="selectedBank === 'HDFC'"
+                  (click)="selectedBank = 'HDFC'">
+                  🏦 HDFC Bank
+                </button>
+                <button 
+                  type="button" 
+                  class="bank-chip" 
+                  [class.selected]="selectedBank === 'ICICI'"
+                  (click)="selectedBank = 'ICICI'">
+                  🏦 ICICI Bank
+                </button>
+                <button 
+                  type="button" 
+                  class="bank-chip" 
+                  [class.selected]="selectedBank === 'SBI'"
+                  (click)="selectedBank = 'SBI'">
+                  🏦 State Bank of India
+                </button>
+                <button 
+                  type="button" 
+                  class="bank-chip" 
+                  [class.selected]="selectedBank === 'Axis'"
+                  (click)="selectedBank = 'Axis'">
+                  🏦 Axis Bank
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Submit Button -->
+          <div class="pay-action-row">
+            <button 
+              type="button" 
+              class="btn-pay-now" 
+              (click)="processPayment()"
+              [disabled]="isProcessing">
+              @if (isProcessing) {
+                <span class="btn-spinner"></span>
+                <span>{{ processingMessage }}</span>
+              } @else {
+                <span>Pay ₹{{ amountToPay | number }} Securely →</span>
+              }
+            </button>
+
+            <a [routerLink]="['/courses', courseId]" class="btn-cancel-checkout">
+              Cancel &amp; Return to Course
+            </a>
+          </div>
+
+          <div class="guarantee-footer">
+            <span class="shield">🛡️</span>
+            <span>Money-Back Guarantee: If not satisfied within 30 days, receive a 100% full refund with zero questions asked.</span>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Order Summary -->
+        <div class="order-summary-panel">
+          <div class="summary-box">
+            <h3>Order Summary</h3>
+
+            @if (course) {
+              <div class="course-mini-card">
+                @if (course.thumbnailUrl) {
+                  <img [src]="course.thumbnailUrl" [alt]="course.title" class="summary-thumb" />
+                } @else {
+                  <div class="summary-thumb-placeholder">📚</div>
+                }
+                <div class="summary-details">
+                  <span class="category-tag">{{ course.categoryName || 'Technology' }}</span>
+                  <h4>{{ course.title }}</h4>
+                  <p class="instructor-by">By {{ course.instructorName || 'Expert Educator' }}</p>
+                </div>
+              </div>
+
+              <div class="price-breakdown">
+                <div class="line-item">
+                  <span>Course Price</span>
+                  <span class="amount">₹{{ course.price | number }}</span>
+                </div>
+
+                @if (course.discountPrice && course.discountPrice < course.price) {
+                  <div class="line-item discount">
+                    <span>Promotional Discount</span>
+                    <span class="amount">-₹{{ (course.price - course.discountPrice) | number }}</span>
+                  </div>
+                }
+
+                <div class="line-item">
+                  <span>Platform Fee</span>
+                  <span class="amount free">FREE</span>
+                </div>
+
+                <div class="line-item total-line">
+                  <span>Total Amount Due</span>
+                  <span class="total-amount">₹{{ amountToPay | number }}</span>
+                </div>
+              </div>
+
+              <div class="summary-perks">
+                <div class="perk-item">
+                  <span class="check">✓</span>
+                  <span>Instant access to all modules and video lessons</span>
+                </div>
+                <div class="perk-item">
+                  <span class="check">✓</span>
+                  <span>Interactive quizzes and score tracking</span>
+                </div>
+                <div class="perk-item">
+                  <span class="check">✓</span>
+                  <span>Official verifiable Certificate of Completion</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

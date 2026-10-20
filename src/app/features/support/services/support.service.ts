@@ -60,4 +60,8 @@ export class SupportService {
   assignTicket(ticketId: number, assignedAdminId: number | null): Observable<SupportTicket> {
     return this.http.put<SupportTicket>(`${this.baseUrl}/admin/tickets/${ticketId}/assign`, { assignedAdminId });
   }
+
+  getAssignableAdmins(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/admin/assignable-admins`);
+  }
 }

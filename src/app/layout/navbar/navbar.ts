@@ -33,7 +33,7 @@ export class Navbar implements OnInit, OnDestroy {
     this.authService.currentRoles$.subscribe(roles => {
       if (Array.isArray(roles)) {
         this.canCreateCourse = roles.includes('Instructor');
-        this.isAdmin = roles.includes('SuperAdmin') || roles.includes('SubAdmin');
+        this.isAdmin = roles.includes('SuperAdmin') || roles.includes('SubAdmin') || roles.includes('ProductSupport');
         this.isStudent = roles.includes('Student');
       } else {
         this.canCreateCourse = false;

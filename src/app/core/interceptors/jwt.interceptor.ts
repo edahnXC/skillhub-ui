@@ -1,5 +1,5 @@
 import { HttpInterceptorFn, HttpErrorResponse, HttpRequest, HttpHandlerFn, HttpEvent } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { AuthService } from '../../features/auth/services/auth.service';
@@ -8,8 +8,9 @@ let isRefreshing = false;
 let refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
-  const token = authService.getAccessToken();
+  const injector = inject(Injector);
+  // Retrieve token directly from localStorage to prevent circular DI during startup
+  const token = localStorage.getItem('token');
 
   // Skip token attachment for login, register, and refresh endpoints
   const isExcludedEndpoint = req.url.includes('/api/auth/login') 
@@ -27,7 +28,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       // If error is 401 and not from an excluded endpoint, try to refresh
       if (error.status === 401 && !isExcludedEndpoint) {
-        return handle401Error(authReq, next, authService);
+        return handle401Error(authReq, next, injector);
       }
       return throwError(() => error);
     })
@@ -40,7 +41,9 @@ function addTokenHeader(request: HttpRequest<unknown>, token: string): HttpReque
   });
 }
 
-function handle401Error(request: HttpRequest<unknown>, next: HttpHandlerFn, authService: AuthService): Observable<HttpEvent<unknown>> {
+function handle401Error(request: HttpRequest<unknown>, next: HttpHandlerFn, injector: Injector): Observable<HttpEvent<unknown>> {
+  const authService = injector.get(AuthService);
+
   if (!isRefreshing) {
     isRefreshing = true;
     refreshTokenSubject.next(null);

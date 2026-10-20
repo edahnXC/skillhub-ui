@@ -3,6 +3,85 @@
     <h1>User Management &amp; Roles</h1>
     <p>Manage platform accounts, monitor role assignments, and configure granular SubAdmin permissions.</p>
   </div>
+  <div class="header-stats">
+    <div class="stat-pill" [class.active]="selectedRole === 'ALL'" (click)="selectedRole = 'ALL'; onFilterChange()">
+      <span class="stat-label">Total Users</span>
+      <span class="stat-value">{{ countAll }}</span>
+    </div>
+    <div class="stat-pill student" [class.active]="selectedRole === 'Student'" (click)="selectedRole = 'Student'; onFilterChange()">
+      <span class="stat-label">Students</span>
+      <span class="stat-value">{{ countStudents }}</span>
+    </div>
+    <div class="stat-pill instructor" [class.active]="selectedRole === 'Instructor'" (click)="selectedRole = 'Instructor'; onFilterChange()">
+      <span class="stat-label">Instructors</span>
+      <span class="stat-value">{{ countInstructors }}</span>
+    </div>
+    <div class="stat-pill subadmin" [class.active]="selectedRole === 'SubAdmin'" (click)="selectedRole = 'SubAdmin'; onFilterChange()">
+      <span class="stat-label">SubAdmins</span>
+      <span class="stat-value">{{ countSubAdmins }}</span>
+    </div>
+    <div class="stat-pill superadmin" [class.active]="selectedRole === 'SuperAdmin'" (click)="selectedRole = 'SuperAdmin'; onFilterChange()">
+      <span class="stat-label">SuperAdmins</span>
+      <span class="stat-value">{{ countSuperAdmins }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Filter & Search Toolbar ──────────────────────── -->
+<div class="filter-toolbar-card">
+  <div class="search-box-wrap">
+    <span class="search-icon">🔍</span>
+    <input 
+      type="text" 
+      class="search-input" 
+      placeholder="Search by name or email address..." 
+      [(ngModel)]="searchTerm" 
+      (ngModelChange)="onFilterChange()">
+    @if (searchTerm) {
+      <button type="button" class="btn-clear-search" (click)="searchTerm = ''; onFilterChange()" title="Clear search">✕</button>
+    }
+  </div>
+
+  <div class="filter-controls-wrap">
+    <!-- Role Filter -->
+    <div class="filter-group">
+      <label for="roleFilter">Role:</label>
+      <select id="roleFilter" class="filter-select" [(ngModel)]="selectedRole" (change)="onFilterChange()">
+        <option value="ALL">All Roles ({{ countAll }})</option>
+        <option value="Student">Students ({{ countStudents }})</option>
+        <option value="Instructor">Instructors ({{ countInstructors }})</option>
+        <option value="SubAdmin">SubAdmins ({{ countSubAdmins }})</option>
+        <option value="SuperAdmin">SuperAdmins ({{ countSuperAdmins }})</option>
+      </select>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="filter-group">
+      <label for="statusFilter">Status:</label>
+      <select id="statusFilter" class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+        <option value="ALL">All Status</option>
+        <option value="ACTIVE">Active</option>
+        <option value="INACTIVE">Inactive</option>
+      </select>
+    </div>
+
+    <!-- Items Per Page -->
+    <div class="filter-group">
+      <label for="pageSizeSelect">Show:</label>
+      <select id="pageSizeSelect" class="filter-select" [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+        @for (opt of pageSizeOptions; track opt) {
+          <option [value]="opt">{{ opt }} per page</option>
+        }
+      </select>
+    </div>
+
+    <!-- Clear Filters Button -->
+    @if (searchTerm || selectedRole !== 'ALL' || selectedStatus !== 'ALL') {
+      <button type="button" class="btn-reset-filters" (click)="resetFilters()">
+        ✕ Reset
+      </button>
+    }
+  </div>
 </div>
 
 <div class="admin-card">
@@ -28,16 +107,19 @@
           </tr>
         </thead>
         <tbody>
-          @for (user of users; track user.id; let i = $index) {
+          @for (user of pagedUsers; track user.id; let i = $index) {
             <tr>
-              <td class="col-index">{{ i + 1 }}</td>
+              <td class="col-index">{{ paginationStartIndex + i }}</td>
               <td class="font-medium">
                 <div class="user-name-cell">
-                  <div class="user-avatar-initial">
+                  <div class="user-avatar-initial" [ngClass]="user.roles[0]?.toLowerCase()">
                     {{ user.firstName.charAt(0).toUpperCase() }}
                   </div>
                   <div class="user-details-text">
                     <span class="full-name">{{ user.firstName }} {{ user.lastName }}</span>
+                    @if (user.id === currentUserId) {
+                      <span class="badge-self-inline">You</span>
+                    }
                   </div>
                 </div>
               </td>
@@ -68,24 +150,108 @@
                     </button>
                   }
 
-                  <button 
-                    type="button"
-                    class="btn-delete" 
-                    (click)="deleteUser(user.id)"
-                    [disabled]="user.roles.includes('SuperAdmin')">
-                    Delete
-                  </button>
+                  <!-- Secure Role Deletion Action -->
+                  @if (canDeleteUser(user)) {
+                    <button 
+                      type="button"
+                      class="btn-delete" 
+                      (click)="deleteUser(user.id)"
+                      [title]="getDeleteTooltip(user)">
+                      Delete
+                    </button>
+                  } @else if (user.roles.includes('SuperAdmin')) {
+                    <span class="badge-lock superadmin-lock" [title]="getDeleteTooltip(user)">
+                      🔒 SuperAdmin
+                    </span>
+                  } @else if (user.roles.includes('SubAdmin') && !isSuperAdmin) {
+                    <span class="badge-lock subadmin-lock" [title]="getDeleteTooltip(user)">
+                      🔒 Admin Locked
+                    </span>
+                  } @else if (user.id === currentUserId) {
+                    <span class="badge-lock self-lock" [title]="getDeleteTooltip(user)">
+                      👤 Current User
+                    </span>
+                  }
                 </div>
               </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="7" class="text-center">No users found.</td>
+              <td colspan="7" class="empty-state-cell">
+                <div class="empty-state-content">
+                  <span class="empty-icon">👥</span>
+                  <p class="empty-title">No users match your criteria</p>
+                  <p class="empty-desc">Try adjusting your search terms or filters.</p>
+                  @if (searchTerm || selectedRole !== 'ALL' || selectedStatus !== 'ALL') {
+                    <button type="button" class="btn-tool" (click)="resetFilters()">Clear Filters</button>
+                  }
+                </div>
+              </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+
+    <!-- ── Pagination Bar ────────────────────────────── -->
+    @if (filteredUsers.length > 0) {
+      <div class="pagination-footer">
+        <div class="pagination-info">
+          Showing <strong>{{ paginationStartIndex }}</strong> – <strong>{{ paginationEndIndex }}</strong> of <strong>{{ filteredUsers.length }}</strong> users
+          @if (filteredUsers.length !== users.length) {
+            <span class="filtered-note">(filtered from {{ users.length }} total)</span>
+          }
+        </div>
+
+        <div class="pagination-controls">
+          <button 
+            type="button" 
+            class="page-btn page-nav" 
+            [disabled]="currentPage === 1" 
+            (click)="firstPage()"
+            title="First Page">
+            « First
+          </button>
+          <button 
+            type="button" 
+            class="page-btn page-nav" 
+            [disabled]="currentPage === 1" 
+            (click)="prevPage()"
+            title="Previous Page">
+            ‹ Prev
+          </button>
+
+          <div class="page-numbers">
+            @for (p of pageNumbers; track p) {
+              <button 
+                type="button" 
+                class="page-btn page-num" 
+                [class.active]="p === currentPage" 
+                (click)="setPage(p)">
+                {{ p }}
+              </button>
+            }
+          </div>
+
+          <button 
+            type="button" 
+            class="page-btn page-nav" 
+            [disabled]="currentPage === totalPages" 
+            (click)="nextPage()"
+            title="Next Page">
+            Next ›
+          </button>
+          <button 
+            type="button" 
+            class="page-btn page-nav" 
+            [disabled]="currentPage === totalPages" 
+            (click)="lastPage()"
+            title="Last Page">
+            Last »
+          </button>
+        </div>
+      </div>
+    }
   }
 </div>
 

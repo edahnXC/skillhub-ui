@@ -60,6 +60,12 @@
         </div>
       </div>
 
+      <div class="form-row-extra">
+        <button type="button" class="btn-forgot-link" (click)="openForgotPassword()">
+          Forgot password?
+        </button>
+      </div>
+
       <button class="btn-primary" type="submit" [disabled]="loginForm.invalid || isSubmitting">
         {{ isSubmitting ? 'Signing in…' : 'Sign In' }}
       </button>
@@ -71,3 +77,85 @@
 
   </div>
 </div>
+
+<!-- ── Forgot / Reset Password Modal ────────────────── -->
+@if (showForgotPasswordModal) {
+  <div class="modal-backdrop" (click)="closeForgotPassword()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-icon">🔑</div>
+        <div>
+          <h2>{{ forgotStep === 'request' ? 'Reset Your Password' : 'Enter Verification Code' }}</h2>
+          <p>{{ forgotStep === 'request' ? 'Enter your account email to receive a password reset code.' : 'Enter the code and choose a new password.' }}</p>
+        </div>
+        <button type="button" class="btn-close-modal" (click)="closeForgotPassword()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        @if (forgotError) {
+          <div class="error-banner">
+            <span>⚠️ {{ forgotError }}</span>
+          </div>
+        }
+
+        @if (forgotMessage) {
+          <div class="success-banner">
+            <span>✅ {{ forgotMessage }}</span>
+          </div>
+        }
+
+        @if (forgotStep === 'request') {
+          <div class="form-group">
+            <label for="forgotEmail">Email Address</label>
+            <input 
+              id="forgotEmail" 
+              type="email" 
+              class="modal-input" 
+              [(ngModel)]="forgotEmail" 
+              placeholder="you@example.com" 
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeForgotPassword()">Cancel</button>
+            <button type="button" class="btn-primary" [disabled]="forgotLoading || !forgotEmail" (click)="onRequestResetCode()">
+              {{ forgotLoading ? 'Sending...' : 'Send Reset Code' }}
+            </button>
+          </div>
+        } @else {
+          <div class="form-group">
+            <label for="resetCode">6-Digit Verification Code</label>
+            <p class="field-hint">Check your inbox (or spam folder) for the verification code dispatched to <strong>{{ forgotEmail }}</strong>.</p>
+            <input 
+              id="resetCode" 
+              type="text" 
+              class="modal-input text-center font-mono" 
+              [(ngModel)]="resetCode" 
+              placeholder="123456" 
+              maxlength="6"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input 
+              id="newPassword" 
+              type="password" 
+              class="modal-input" 
+              [(ngModel)]="newPassword" 
+              placeholder="Enter new password (min. 6 characters)" 
+            />
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="forgotStep = 'request'">Back</button>
+            <button type="button" class="btn-primary" [disabled]="forgotLoading || !resetCode || !newPassword" (click)="onResetPassword()">
+              {{ forgotLoading ? 'Updating...' : 'Set New Password' }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

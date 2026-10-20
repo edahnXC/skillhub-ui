@@ -33,9 +33,14 @@
         </div>
       }
 
+      <!-- Certificate Button (Unlocked or Locked with Criteria) -->
       @if (learningData?.certificate) {
-        <button type="button" class="btn-certificate" (click)="openCertificateModal()">
+        <button type="button" class="btn-certificate unlocked" (click)="openCertificateModal()">
           🏆 View Certificate
+        </button>
+      } @else if (learningData) {
+        <button type="button" class="btn-certificate locked" (click)="openRequirementModal()" title="View requirements to unlock certificate">
+          🔒 Certificate (Locked)
         </button>
       }
     </div>
@@ -414,58 +419,203 @@
 
 </div>
 
+<!-- ── Certificate Requirement Modal ──────────────────── -->
+@if (showRequirementModal) {
+  <div class="modal-backdrop" (click)="closeRequirementModal()">
+    <div class="criteria-modal-card" (click)="$event.stopPropagation()">
+      <div class="criteria-header">
+        <div class="criteria-title-group">
+          <div class="criteria-icon">🎓</div>
+          <div>
+            <h3>Certificate of Completion Requirements</h3>
+            <p>Earn an official verifiable credential upon meeting the academic standards below:</p>
+          </div>
+        </div>
+        <button type="button" class="close-btn" (click)="closeRequirementModal()" aria-label="Close">✕</button>
+      </div>
+
+      <div class="criteria-body">
+        <div class="criterion-item" [class.met]="learningData && learningData.progressPercentage >= 100">
+          <div class="criterion-status-icon">
+            {{ (learningData && learningData.progressPercentage >= 100) ? '✅' : '⏳' }}
+          </div>
+          <div class="criterion-details">
+            <div class="criterion-title">1. Complete 100% of Curriculum Modules</div>
+            <div class="criterion-desc">
+              All video lessons, practical lectures, and lab exercises must be completed.
+            </div>
+            <div class="criterion-progress-bar">
+              <div class="fill" [style.width.%]="learningData?.progressPercentage || 0"></div>
+            </div>
+            <div class="criterion-stat">
+              {{ learningData?.completedLessonsCount }} of {{ learningData?.totalLessonsCount }} lectures completed ({{ learningData?.progressPercentage }}%)
+            </div>
+          </div>
+        </div>
+
+        <div class="criterion-item" [class.met]="isQuizPassed">
+          <div class="criterion-status-icon">
+            {{ isQuizPassed ? '✅' : '⏳' }}
+          </div>
+          <div class="criterion-details">
+            <div class="criterion-title">2. Pass Course Assessment with ≥70% Score</div>
+            <div class="criterion-desc">
+              Demonstrate mastery of technical concepts in the comprehensive evaluation assessment.
+            </div>
+            <div class="criterion-stat">
+              @if (quizzes.length === 0) {
+                <span>No assessment required for this introductory course.</span>
+              } @else if (quizResult) {
+                <span>
+                  Current Best Score: <strong>{{ quizResult.scorePercentage }}%</strong>
+                  <span [class.text-success]="quizResult.scorePercentage >= 70" [class.text-danger]="quizResult.scorePercentage < 70">
+                    ({{ quizResult.scorePercentage >= 70 ? 'Requirement Met' : '70% Required — Retake Available' }})
+                  </span>
+                </span>
+              } @else {
+                <span class="text-warning">Assessment not yet attempted (Passing mark: 70%).</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="criteria-footer">
+        <button type="button" class="btn-secondary" (click)="closeRequirementModal()">Close</button>
+        @if (quizzes.length > 0 && !isQuizPassed) {
+          <button type="button" class="btn-primary-action" (click)="activeTab = 'quiz'; closeRequirementModal()">
+            🎯 Take Assessment Now
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
 <!-- ── Luxury Verifiable Certificate Modal ───────────── -->
 @if (showCertificateModal && learningData && learningData.certificate) {
   <div class="modal-backdrop" (click)="closeCertificateModal()">
     <div class="certificate-modal-card" (click)="$event.stopPropagation()">
       <div class="cert-modal-header">
-        <h3>Official Certificate of Completion</h3>
-        <button type="button" class="close-btn" (click)="closeCertificateModal()">✕</button>
+        <div class="cert-modal-title-group">
+          <span class="cert-modal-badge">Official Verifiable Credential</span>
+          <h3>SkillHub Academy • Certificate of Completion</h3>
+        </div>
+        <button type="button" class="close-btn" (click)="closeCertificateModal()" aria-label="Close">✕</button>
       </div>
 
+      <!-- Printable Document Container -->
       <div class="certificate-document" id="printable-certificate">
+        <!-- Ornate Brass Corner Flourishes -->
+        <div class="corner-flourish tl"></div>
+        <div class="corner-flourish tr"></div>
+        <div class="corner-flourish bl"></div>
+        <div class="corner-flourish br"></div>
+
         <div class="cert-inner-border">
-          <div class="cert-watermark">SKILLHUB</div>
+          <!-- Subtle Guilloche Security Watermark -->
+          <div class="cert-watermark">SKILLHUB ACADEMY</div>
           
           <div class="cert-header">
-            <div class="cert-logo">⚡ SkillHub Academy</div>
-            <div class="cert-title">Certificate of Completion</div>
-            <p class="cert-subtitle">This is to proudly certify that</p>
+            <div class="cert-academy-crest">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L4 6v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V6l-8-4z" fill="url(#crestGrad)" stroke="#b45309" stroke-width="1.5"/>
+                <path d="M9 12l2 2 4-4" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <defs>
+                  <linearGradient id="crestGrad" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#f59e0b"/>
+                    <stop offset="1" stop-color="#b45309"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div class="cert-organization">SKILLHUB ACADEMY OF TECHNICAL EXCELLENCE</div>
+            <div class="cert-accreditation">DIRECTORATE OF PROFESSIONAL CERTIFICATION & ACCREDITATION</div>
+            <h1 class="cert-title">Certificate of Completion</h1>
+            <p class="cert-subtitle">THIS OFFICIAL CREDENTIAL IS PROUDLY CONFERRED UPON</p>
           </div>
 
           <div class="cert-recipient">
-            <h1 class="student-name">{{ learningData.certificate.studentName }}</h1>
-            <div class="cert-line"></div>
+            <h2 class="student-name">{{ learningData.certificate.studentName }}</h2>
+            <div class="cert-line">
+              <span class="line-star">★</span>
+            </div>
           </div>
 
           <div class="cert-body">
             <p class="cert-text">
-              has successfully completed with distinction the comprehensive curriculum and technical assessments for
+              for successfully mastering with distinction the comprehensive curriculum, technical modules, and passing all evaluative mastery assessments (scored ≥70%) for
             </p>
-            <h2 class="course-name">{{ learningData.certificate.courseTitle }}</h2>
-            <p class="instructor-endorsement">
-              Under the instruction and guidance of <strong>{{ learningData.instructorName }}</strong>
-            </p>
+            <h3 class="course-name">{{ learningData.certificate.courseTitle }}</h3>
+            
+            <div class="cert-stats-row">
+              <div class="stat-item">
+                <span class="stat-label">Curriculum</span>
+                <span class="stat-value">100% Modules Completed</span>
+              </div>
+              <div class="stat-divider">•</div>
+              <div class="stat-item">
+                <span class="stat-label">Assessment Result</span>
+                <span class="stat-value">{{ learningData.certificate.grade || 'Passed with Distinction (≥70%)' }}</span>
+              </div>
+              <div class="stat-divider">•</div>
+              <div class="stat-item">
+                <span class="stat-label">Academic Status</span>
+                <span class="stat-value">Verified Graduate</span>
+              </div>
+            </div>
           </div>
 
           <div class="cert-footer">
-            <div class="footer-block">
-              <div class="cert-date">{{ learningData.certificate.issuedAt | date:'longDate' }}</div>
-              <div class="footer-label">Date of Issue</div>
-            </div>
-
-            <div class="cert-seal">
-              <div class="seal-circle">
-                <span>VERIFIED</span>
-                <span class="star">★</span>
+            <!-- Left: Issue Date & Dean Signature -->
+            <div class="footer-block footer-left">
+              <div class="cert-signature-wrap">
+                <div class="signature-script">Dr. Julian Vance</div>
+                <div class="sig-line"></div>
+              </div>
+              <div class="sig-role">Academic Director, SkillHub</div>
+              <div class="cert-date-wrap">
+                <span class="meta-label">Date of Issue:</span>
+                <span class="meta-value">{{ learningData.certificate.issuedAt | date:'longDate' }}</span>
               </div>
             </div>
 
-            <div class="footer-block">
-              <div class="cert-number">{{ learningData.certificate.certificateNumber }}</div>
-              <div class="footer-label">Certificate ID / Verification Code</div>
+            <!-- Center: 3D Embossed Gold Seal -->
+            <div class="cert-seal-container">
+              <div class="cert-seal">
+                <div class="seal-ribbon left"></div>
+                <div class="seal-ribbon right"></div>
+                <div class="seal-outer-circle">
+                  <div class="seal-inner-circle">
+                    <div class="seal-stars">★★★</div>
+                    <div class="seal-brand">SKILLHUB</div>
+                    <div class="seal-status">OFFICIAL</div>
+                    <div class="seal-text-arch">VERIFIED</div>
+                    <div class="seal-check">★</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Instructor Signature & Credential ID -->
+            <div class="footer-block footer-right">
+              <div class="cert-signature-wrap">
+                <div class="signature-script instructor-sig">{{ learningData.certificate.instructorName || learningData.instructorName }}</div>
+                <div class="sig-line"></div>
+              </div>
+              <div class="sig-role">Lead Instructor & Mentor</div>
+              <div class="cert-id-wrap">
+                <span class="meta-label">Credential Verification ID:</span>
+                <span class="cert-number">{{ learningData.certificate.certificateNumber }}</span>
+              </div>
             </div>
           </div>
+
+          <!-- Security Verification Bar -->
+          <div class="cert-security-bar">
+            <span>🔒 Cryptographically Verified Credential • SkillHub Academic Registry • Authenticity Verifiable Worldwide</span>
+          </div>
+
         </div>
       </div>
 

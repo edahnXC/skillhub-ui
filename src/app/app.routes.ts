@@ -16,6 +16,7 @@ import { AdminCreateUser } from './features/admin/admin-create-user/admin-create
 import { AdminPermissions } from './features/admin/admin-permissions/admin-permissions';
 import { MyLearning } from './features/enrollment/my-learning/my-learning';
 import { EnrollmentSuccess } from './features/enrollment/enrollment-success/enrollment-success';
+import { PaymentGateway } from './features/enrollment/payment-gateway/payment-gateway';
 import { CoursePlayer } from './features/enrollment/course-player/course-player';
 import { ProfileSettings } from './features/profile/profile-settings/profile-settings';
 import { SupportList } from './features/support/support-list/support-list';
@@ -72,6 +73,11 @@ export const routes: Routes = [
     data: { roles: ['Student'] }
   },
   {
+    path: 'payment/checkout',
+    component: PaymentGateway,
+    canActivate: [authGuard]
+  },
+  {
     path: 'learn/:courseId',
     component: CoursePlayer,
     canActivate: [authGuard],
@@ -103,7 +109,7 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminLayout,
     canActivate: [authGuard],
-    data: { roles: ['SuperAdmin', 'SubAdmin'] },
+    data: { roles: ['SuperAdmin', 'SubAdmin', 'ProductSupport'] },
     children: [
       { path: '', redirectTo: 'users', pathMatch: 'full' },
       { path: 'users', component: AdminUsers },

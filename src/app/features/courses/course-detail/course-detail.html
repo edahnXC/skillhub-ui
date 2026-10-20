@@ -347,44 +347,82 @@
 
 <!-- ── Write Review Modal ────────────────────────── -->
 @if (showReviewModal) {
-  <div class="modal-backdrop" (click)="closeReviewModal()">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
+  <div class="review-modal-backdrop" (click)="closeReviewModal()">
+    <div class="review-modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>Rate &amp; Review Course</h3>
-        <button type="button" class="close-btn" (click)="closeReviewModal()">✕</button>
+        <div class="modal-title-area">
+          <div class="header-icon-box">⭐</div>
+          <div>
+            <h3>Rate &amp; Review Course</h3>
+            <p class="modal-course-sub">Share your feedback for <strong>{{ course?.title }}</strong></p>
+          </div>
+        </div>
+        <button type="button" class="close-btn" (click)="closeReviewModal()" aria-label="Close modal">✕</button>
       </div>
 
       <div class="modal-body">
-        <div class="star-rating-picker">
-          <label>Select Rating</label>
-          <div class="stars-row">
+        <!-- Interactive Star Picker -->
+        <div class="star-rating-section">
+          <label class="section-label">YOUR OVERALL RATING</label>
+          <div class="stars-interactive-row" (mouseleave)="clearHoverRating()">
             @for (star of [1, 2, 3, 4, 5]; track star) {
               <button 
                 type="button" 
                 class="star-btn" 
-                [class.active]="star <= selectedRating" 
-                (click)="setRating(star)">
+                [class.active]="star <= (hoveredRating || selectedRating)"
+                [class.hovered]="star <= hoveredRating"
+                (mouseenter)="setHoverRating(star)"
+                (click)="setRating(star)"
+                [attr.aria-label]="star + ' stars'">
                 ★
               </button>
             }
           </div>
-          <span class="rating-hint">{{ selectedRating }} of 5 Stars</span>
+          <div class="rating-pill-badge">
+            {{ getRatingLabel() }}
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="reviewComment">Your Feedback (Optional)</label>
+        <!-- Quick Tag Chips -->
+        <div class="quick-tags-section">
+          <label class="section-label">QUICK HIGHLIGHTS (CLICK TO ADD)</label>
+          <div class="tags-cloud">
+            @for (tag of reviewTags; track tag) {
+              <button 
+                type="button" 
+                class="tag-chip" 
+                [class.selected]="reviewComment.includes(tag)"
+                (click)="addReviewTag(tag)">
+                + {{ tag }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Detailed Feedback Input -->
+        <div class="form-group review-textarea-group">
+          <div class="label-row">
+            <label for="reviewComment" class="section-label">DETAILED FEEDBACK (OPTIONAL)</label>
+            <span class="char-count">{{ reviewComment.length }}/1000</span>
+          </div>
           <textarea 
             id="reviewComment" 
             [(ngModel)]="reviewComment" 
             rows="4" 
-            placeholder="What did you like about this course? How did it help you build your skills?"></textarea>
+            maxlength="1000"
+            placeholder="What did you enjoy most about the lectures? How was the teaching style, hands-on projects, or code examples?"></textarea>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="closeReviewModal()">Cancel</button>
-        <button type="button" class="btn-primary" (click)="submitReview()" [disabled]="isSubmittingReview">
-          {{ isSubmittingReview ? 'Submitting...' : 'Submit Review' }}
+        <button type="button" class="btn-cancel" (click)="closeReviewModal()">Cancel</button>
+        <button type="button" class="btn-submit-review" (click)="submitReview()" [disabled]="isSubmittingReview">
+          @if (isSubmittingReview) {
+            <span class="btn-spinner"></span>
+            <span>Publishing...</span>
+          } @else {
+            <span>⭐ Submit Review</span>
+          }
         </button>
       </div>
     </div>

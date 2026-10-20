@@ -13,7 +13,8 @@ import { PaymentService } from '../services/payment.service';
 export class EnrollmentSuccess implements OnInit {
   isVerifying = true;
   isSuccess = false;
-  message = 'Verifying your payment with Stripe...';
+  isFree = false;
+  message = 'Verifying your course enrollment...';
   courseId: number | null = null;
 
   constructor(
@@ -24,10 +25,27 @@ export class EnrollmentSuccess implements OnInit {
 
   ngOnInit(): void {
     const sessionId = this.route.snapshot.queryParamMap.get('session_id');
+    const isFreeParam = this.route.snapshot.queryParamMap.get('free') === 'true';
+    const courseIdParam = this.route.snapshot.queryParamMap.get('courseId');
+
+    if (courseIdParam) {
+      this.courseId = parseInt(courseIdParam, 10);
+    }
+
+    // Direct Free Course Enrollment
+    if (isFreeParam) {
+      this.isVerifying = false;
+      this.isSuccess = true;
+      this.isFree = true;
+      this.message = 'Enrollment confirmed! You have full access to this course.';
+      return;
+    }
+
+    // Paid Course Session ID verification
     if (!sessionId) {
       this.isVerifying = false;
       this.isSuccess = false;
-      this.message = 'No payment session ID found.';
+      this.message = 'No payment session verification key found.';
       return;
     }
 
@@ -43,7 +61,7 @@ export class EnrollmentSuccess implements OnInit {
       error: (err) => {
         this.isVerifying = false;
         this.isSuccess = false;
-        this.message = err.error?.message || 'Could not verify payment with Stripe.';
+        this.message = err.error?.message || 'Could not verify payment with payment gateway.';
         console.error(err);
       }
     });

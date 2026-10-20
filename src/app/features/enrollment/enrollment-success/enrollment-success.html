@@ -5,20 +5,23 @@
       @if (isVerifying) {
         <div class="state-block">
           <div class="spinner"></div>
-          <h2>Confirming Payment</h2>
+          <h2>Confirming Enrollment</h2>
           <p>{{ message }}</p>
         </div>
       } @else if (isSuccess) {
         <div class="state-block animate-fade-in-up">
           <div class="success-icon-badge">🎉</div>
-          <h2>Payment Successful!</h2>
+          <h2>{{ isFree ? 'Enrollment Confirmed!' : 'Payment Successful!' }}</h2>
           <p class="success-msg">{{ message }}</p>
-          <p class="sub-msg">Your course has been added to your learning dashboard.</p>
+          <p class="sub-msg">Your course has been added to your learning dashboard and is ready to watch.</p>
           
           <div class="action-row">
-            <a routerLink="/my-learning" class="btn-primary btn-lg">Go to My Learning →</a>
             @if (courseId) {
-              <a [routerLink]="['/courses', courseId]" class="btn-secondary btn-lg">View Course Details</a>
+              <a [routerLink]="['/learn', courseId]" class="btn-primary btn-lg">Start Learning Now →</a>
+            }
+            <a routerLink="/my-learning" class="btn-secondary btn-lg">Go to My Learning</a>
+            @if (courseId) {
+              <a [routerLink]="['/courses', courseId]" class="btn-secondary btn-lg">Course Overview</a>
             }
           </div>
         </div>
@@ -28,7 +31,10 @@
           <h2>Verification Failed</h2>
           <p class="error-msg">{{ message }}</p>
           <div class="action-row">
-            <a routerLink="/courses" class="btn-primary btn-lg">Return to Courses</a>
+            @if (courseId) {
+              <a [routerLink]="['/courses', courseId]" class="btn-primary btn-lg">Try Again</a>
+            }
+            <a routerLink="/courses" class="btn-secondary btn-lg">Return to Courses</a>
           </div>
         </div>
       }

@@ -5,6 +5,9 @@ export interface CertificateInfo {
   issuedAt: string;
   studentName: string;
   courseTitle: string;
+  instructorName?: string;
+  finalScore?: number | null;
+  grade?: string | null;
 }
 
 export interface LearningLesson {
@@ -35,6 +38,11 @@ export interface CourseLearning {
   totalLessonsCount: number;
   sections: LearningSection[];
   certificate?: CertificateInfo | null;
+  isCertificateEligible?: boolean;
+  certificateRequirementMessage?: string | null;
+  totalQuizzesCount?: number;
+  passedQuizzesCount?: number;
+  averageAssessmentScore?: number | null;
 }
 
 export interface ToggleLessonCompletionRequest {
@@ -51,4 +59,6 @@ export interface LessonCompletionResult {
   totalLessonsCount: number;
   isCourseCompleted: boolean;
   certificate?: CertificateInfo | null;
+  isCertificateEligible?: boolean;
+  certificateRequirementMessage?: string | null;
 }

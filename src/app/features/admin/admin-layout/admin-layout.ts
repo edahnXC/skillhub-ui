@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../auth/services/auth.service';
 import { HasPermissionDirective } from '../../../core/directives/has-permission.directive';
@@ -14,12 +14,17 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 export class AdminLayout implements OnInit {
   isSuperAdmin = false;
 
-  constructor(public authService: AuthService) {}
+  constructor(public authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.authService.currentRoles$.subscribe(roles => {
       if (Array.isArray(roles)) {
         this.isSuperAdmin = roles.includes('SuperAdmin');
+        if (roles.includes('ProductSupport') && !roles.includes('SuperAdmin') && !roles.includes('SubAdmin')) {
+          if (this.router.url === '/admin' || this.router.url === '/admin/users') {
+            this.router.navigate(['/admin/support']);
+          }
+        }
       } else {
         this.isSuperAdmin = false;
       }

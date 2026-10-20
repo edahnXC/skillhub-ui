@@ -49,8 +49,12 @@ export class AuthService {
         this.currentPermissionsSubject.next(perms);
         this.isLoggedInSubject.next(true);
 
-        // Refresh permissions from server in background
-        this.refreshUserPermissions().subscribe();
+        // Refresh permissions from server in background after bootstrap
+        setTimeout(() => {
+          this.refreshUserPermissions().subscribe({
+            error: () => { /* gracefully ignore if backend unavailable */ }
+          });
+        }, 0);
       } catch {
         this.clearState();
       }
@@ -144,6 +148,14 @@ export class AuthService {
   login(request: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, request)
       .pipe(tap(response => this.saveStateToStorage(response)));
+  }
+
+  forgotPassword(email: string): Observable<{ message: string; resetCode?: string }> {
+    return this.http.post<{ message: string; resetCode?: string }>(`${environment.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(payload: { email: string; resetCode: string; newPassword: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/reset-password`, payload);
   }
 
   refreshToken(): Observable<AuthResponse> {

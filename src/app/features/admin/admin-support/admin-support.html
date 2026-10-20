@@ -3,7 +3,13 @@
   <!-- ── Top Header ──────────────────────────────── -->
   <div class="studio-header">
     <div class="header-left">
-      <span class="badge-tag">🛡️ Operational Command</span>
+      @if (isProductSupport) {
+        <span class="badge-tag support-badge">🎧 Product Support Command</span>
+      } @else if (isSuperAdmin) {
+        <span class="badge-tag superadmin-badge">👁️ SuperAdmin Read-Only Oversight</span>
+      } @else {
+        <span class="badge-tag">🛡️ Operational Command</span>
+      }
       <h1>Helpdesk & Support Desk</h1>
       <p>Manage customer tickets, coordinate staff responses, and maintain internal triage notes.</p>
     </div>
@@ -171,6 +177,17 @@
         </div>
       } @else {
 
+        <!-- SuperAdmin Read-Only Notice Strip -->
+        @if (isSuperAdmin) {
+          <div class="superadmin-notice-strip">
+            <span class="strip-icon">👁️</span>
+            <div class="strip-text">
+              <strong>SuperAdmin Read-Only Oversight:</strong>
+              <span>You are viewing all tickets and lifecycle statuses. Ticket assignments and issue resolutions are managed by Product Support and assigned Admins.</span>
+            </div>
+          </div>
+        }
+
         <!-- Ticket Action Toolbar -->
         <div class="workspace-toolbar">
           <div class="toolbar-left">
@@ -186,18 +203,22 @@
                 <button 
                   type="button" 
                   class="status-trigger-btn"
+                  [class.disabled-trigger]="!canChangeStatus"
                   [ngClass]="getCurrentStatusMeta(selectedTicket.status).pillClass"
                   (click)="toggleStatusDropdown($event)"
-                  [disabled]="isUpdatingStatus"
+                  [disabled]="isUpdatingStatus || !canChangeStatus"
+                  [title]="canChangeStatus ? 'Click to change ticket lifecycle status' : 'Status changes are managed by Product Support and assigned Admins'"
                   aria-haspopup="listbox"
                   [attr.aria-expanded]="statusDropdownOpen"
                   id="ticketStatusDropdownBtn">
                   <span class="status-dot"></span>
                   <span class="status-name">{{ getCurrentStatusMeta(selectedTicket.status).label }}</span>
-                  <span class="chevron" [class.rotated]="statusDropdownOpen">▾</span>
+                  @if (canChangeStatus) {
+                    <span class="chevron" [class.rotated]="statusDropdownOpen">▾</span>
+                  }
                 </button>
 
-                @if (statusDropdownOpen) {
+                @if (statusDropdownOpen && canChangeStatus) {
                   <div class="custom-dropdown-menu status-menu animate-fade-in-up" role="listbox" (click)="$event.stopPropagation()">
                     <div class="menu-header">Change Ticket Lifecycle</div>
                     @for (opt of statusOptions; track opt.id) {
@@ -232,18 +253,22 @@
                 <button 
                   type="button" 
                   class="assign-trigger-btn"
+                  [class.disabled-trigger]="!canAssign"
                   [class.unassigned]="!selectedTicket.assignedAdminId"
                   (click)="toggleAssignDropdown($event)"
-                  [disabled]="isUpdatingAssignee"
+                  [disabled]="isUpdatingAssignee || !canAssign"
+                  [title]="canAssign ? 'Click to assign ticket to an Admin' : 'Ticket assignment is exclusively managed by Product Support'"
                   aria-haspopup="listbox"
                   [attr.aria-expanded]="assignDropdownOpen"
                   id="ticketAssignDropdownBtn">
                   <span class="assign-avatar">{{ selectedTicket.assignedAdminName ? selectedTicket.assignedAdminName.charAt(0).toUpperCase() : '👤' }}</span>
                   <span class="assign-name">{{ selectedTicket.assignedAdminName || 'Unassigned' }}</span>
-                  <span class="chevron" [class.rotated]="assignDropdownOpen">▾</span>
+                  @if (canAssign) {
+                    <span class="chevron" [class.rotated]="assignDropdownOpen">▾</span>
+                  }
                 </button>
 
-                @if (assignDropdownOpen) {
+                @if (assignDropdownOpen && canAssign) {
                   <div class="custom-dropdown-menu assign-menu animate-fade-in-up" role="listbox" (click)="$event.stopPropagation()">
                     <div class="menu-header">Assign Staff Member</div>
                     <button 
@@ -348,51 +373,64 @@
           }
         </div>
 
-        <!-- Reply / Note Composer -->
-        <div class="composer-card">
-          <div class="composer-tabs">
-            <button 
-              type="button" 
-              class="comp-tab"
-              [class.active]="!isInternalNote" 
-              (click)="isInternalNote = false">
-              💬 Public Response (User Emailed)
-            </button>
-            <button 
-              type="button" 
-              class="comp-tab internal"
-              [class.active]="isInternalNote" 
-              (click)="isInternalNote = true">
-              🔒 Internal Staff Note (Admins Only)
-            </button>
-          </div>
-
-          <div class="composer-body" [class.internal-bg]="isInternalNote">
-            <textarea 
-              rows="3" 
-              [placeholder]="isInternalNote ? 'Leave internal triage note for other admins...' : 'Type response to send directly to ' + selectedTicket.userName + '...'"
-              [(ngModel)]="replyText"></textarea>
-
-            <div class="composer-footer">
-              <span class="mode-indicator">
-                @if (isInternalNote) {
-                  <span>🔒 Only visible to SuperAdmin and SubAdmin staff.</span>
-                } @else {
-                  <span>📧 Will be dispatched via free transactional email engine.</span>
-                }
-              </span>
-
+        @if (canReply) {
+          <!-- Reply / Note Composer -->
+          <div class="composer-card">
+            <div class="composer-tabs">
               <button 
                 type="button" 
-                class="btn-post"
-                [class.btn-internal]="isInternalNote"
-                (click)="sendStaffReply()"
-                [disabled]="isSending || !replyText.trim()">
-                {{ isSending ? 'Posting...' : (isInternalNote ? 'Save Internal Note' : 'Send Public Reply') }}
+                class="comp-tab"
+                [class.active]="!isInternalNote" 
+                (click)="isInternalNote = false">
+                💬 Public Response (User Emailed)
+              </button>
+              <button 
+                type="button" 
+                class="comp-tab internal"
+                [class.active]="isInternalNote" 
+                (click)="isInternalNote = true">
+                🔒 Internal Staff Note (Staff Only)
               </button>
             </div>
+
+            <div class="composer-body" [class.internal-bg]="isInternalNote">
+              <textarea 
+                rows="3" 
+                [placeholder]="isInternalNote ? 'Leave internal triage note for staff and admins...' : 'Type response to send directly to ' + selectedTicket.userName + '...'"
+                [(ngModel)]="replyText"></textarea>
+
+              <div class="composer-footer">
+                <span class="mode-indicator">
+                  @if (isInternalNote) {
+                    <span>🔒 Visible to Product Support and assigned Admin staff.</span>
+                  } @else {
+                    <span>📧 Will be dispatched via free transactional email engine.</span>
+                  }
+                </span>
+
+                <button 
+                  type="button" 
+                  class="btn-post"
+                  [class.btn-internal]="isInternalNote"
+                  (click)="sendStaffReply()"
+                  [disabled]="isSending || !replyText.trim()">
+                  {{ isSending ? 'Posting...' : (isInternalNote ? 'Save Internal Note' : 'Send Public Reply') }}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        } @else {
+          <!-- Read-Only Banner for SuperAdmin -->
+          <div class="composer-card readonly-composer-card">
+            <div class="readonly-content">
+              <span class="lock-icon">👁️</span>
+              <div>
+                <h4>SuperAdmin Read-Only Oversight</h4>
+                <p>SuperAdmins have audit permissions to view all tickets, messages, and statuses across the platform. Ticket assignments and query resolutions are managed directly by Product Support and assigned Admins.</p>
+              </div>
+            </div>
+          </div>
+        }
 
       }
     </div>

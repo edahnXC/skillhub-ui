@@ -161,6 +161,24 @@ export class CoursePlayer implements OnInit {
     this.expandedSections[sectionId] = !this.expandedSections[sectionId];
   }
 
+  showRequirementModal = false;
+
+  openRequirementModal(): void {
+    this.showRequirementModal = true;
+  }
+
+  closeRequirementModal(): void {
+    this.showRequirementModal = false;
+  }
+
+  get isCertificateReady(): boolean {
+    return !!(this.learningData && this.learningData.certificate);
+  }
+
+  get isQuizPassed(): boolean {
+    return !!(this.quizResult && this.quizResult.isPassed && this.quizResult.scorePercentage >= 70);
+  }
+
   toggleCompletion(): void {
     if (!this.courseId || !this.activeLesson || this.isToggling) return;
 
@@ -181,17 +199,25 @@ export class CoursePlayer implements OnInit {
           this.learningData.progressPercentage = res.updatedProgressPercentage;
           this.learningData.completedLessonsCount = res.completedLessonsCount;
           this.learningData.totalLessonsCount = res.totalLessonsCount;
-          if (res.certificate) {
-            this.learningData.certificate = res.certificate;
+          this.learningData.certificate = res.certificate || null;
+          if (res.isCertificateEligible !== undefined) {
+            this.learningData.isCertificateEligible = res.isCertificateEligible;
+          }
+          if (res.certificateRequirementMessage) {
+            this.learningData.certificateRequirementMessage = res.certificateRequirementMessage;
           }
         }
 
         this.isToggling = false;
 
         if (newStatus) {
-          this.triggerToast('🎉 Lecture marked as complete!');
-          if (res.isCourseCompleted) {
+          if (res.certificate) {
+            this.triggerToast('🎓 Outstanding! Course completed and official Certificate unlocked!');
             this.showCertificateModal = true;
+          } else if (res.isCourseCompleted) {
+            this.triggerToast('🎉 All lectures completed! Pass the assessment with ≥70% to unlock your certificate.');
+          } else {
+            this.triggerToast('🎉 Lecture marked as complete!');
           }
         }
       },
@@ -247,10 +273,18 @@ export class CoursePlayer implements OnInit {
       next: (result) => {
         this.quizResult = result;
         this.isSubmittingQuiz = false;
-        if (result.isPassed) {
-          this.triggerToast(`🏆 Congratulations! You passed with ${result.scorePercentage}%!`);
+
+        if (result.isCertificateAwarded && result.certificate) {
+          if (this.learningData) {
+            this.learningData.certificate = result.certificate;
+            this.learningData.isCertificateEligible = true;
+          }
+          this.triggerToast(`🎓 Brilliant! You scored ${result.scorePercentage}% and unlocked your Official Certificate of Completion!`);
+          this.showCertificateModal = true;
+        } else if (result.isPassed && result.scorePercentage >= 70) {
+          this.triggerToast(`🏆 Assessment passed with ${result.scorePercentage}%! Complete all lectures to claim your certificate.`);
         } else {
-          this.triggerToast(`Keep practicing! You scored ${result.scorePercentage}%.`);
+          this.triggerToast(`Assessment score: ${result.scorePercentage}%. 70% or higher is required to unlock your certificate.`);
         }
       },
       error: (err) => {
