@@ -10,7 +10,42 @@
         Back to Courses
       </a>
       <h1>Create a New Course</h1>
-      <p>Share your knowledge and help students grow</p>
+      <p>Share your knowledge and help students grow through structured curriculum and evaluative assessments</p>
+    </div>
+
+    <!-- ── 3-Step Course Authoring Pipeline ───────── -->
+    <div class="authoring-stepper card-shadow">
+      <div class="step-badge active">
+        <span class="step-num">1</span>
+        <div class="step-info">
+          <span class="step-title">Basics &amp; Pricing</span>
+          <span class="step-sub">Draft Setup</span>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-badge pending">
+        <span class="step-num">2</span>
+        <div class="step-info">
+          <span class="step-title">Curriculum &amp; Videos</span>
+          <span class="step-sub">Syllabus &amp; Lectures</span>
+        </div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-badge pending">
+        <span class="step-num">3</span>
+        <div class="step-info">
+          <span class="step-title">Quizzes &amp; Publish</span>
+          <span class="step-sub">70% Rule Assessment</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workflow Guidance Banner -->
+    <div class="workflow-guidance-banner">
+      <span class="banner-icon">💡</span>
+      <div class="banner-body">
+        <strong>Authoring Process:</strong> Courses are initially saved in <em>Draft Mode</em>. In the next steps, you will construct your curriculum modules, attach video lectures, and build evaluative mastery quizzes before publishing your course live to students.
+      </div>
     </div>
 
     <!-- Form Card -->
@@ -120,7 +155,7 @@
             class="btn-primary btn-submit"
             type="submit"
             [disabled]="courseForm.invalid || isSubmitting">
-            {{ isSubmitting ? 'Creating…' : 'Create Course' }}
+            {{ isSubmitting ? 'Saving Draft…' : 'Save Draft & Continue to Curriculum ➔' }}
           </button>
         </div>
 

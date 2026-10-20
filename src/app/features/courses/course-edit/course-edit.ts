@@ -115,6 +115,48 @@ export class CourseEdit implements OnInit {
     this.successMessage = '';
   }
 
+  /* ── Course Publishing Readiness Getters ────────── */
+  get totalLessonsCount(): number {
+    return this.sections.reduce((acc, s) => acc + (s.lessons?.length || 0), 0);
+  }
+
+  get totalLessonsWithVideo(): number {
+    return this.sections.reduce((acc, s) => {
+      const videoLessons = (s.lessons || []).filter(l => !!l.videoUrl && l.videoUrl.trim().length > 0);
+      return acc + videoLessons.length;
+    }, 0);
+  }
+
+  get hasSyllabus(): boolean {
+    return this.sections.length > 0;
+  }
+
+  get hasVideoContent(): boolean {
+    return this.totalLessonsWithVideo > 0;
+  }
+
+  get hasAssessments(): boolean {
+    return this.quizzes.length > 0;
+  }
+
+  get canPublish(): boolean {
+    return this.hasSyllabus && this.hasVideoContent && this.hasAssessments;
+  }
+
+  get isPublished(): boolean {
+    return !!this.courseForm.get('isPublished')?.value;
+  }
+
+  togglePublish(publish: boolean): void {
+    if (publish && !this.canPublish) {
+      this.error = 'Cannot publish course yet. All readiness requirements (curriculum sections, video lectures, and mastery quizzes) must be satisfied first.';
+      this.courseForm.patchValue({ isPublished: false });
+      return;
+    }
+    this.courseForm.patchValue({ isPublished: publish });
+    this.onSubmit();
+  }
+
   loadCategories(): void {
     this.courseService.getCategories().subscribe({
       next: (data) => {
@@ -184,6 +226,12 @@ export class CourseEdit implements OnInit {
   onSubmit(): void {
     if (this.courseForm.invalid || !this.courseId) return;
 
+    if (this.courseForm.get('isPublished')?.value && !this.canPublish) {
+      this.error = 'Cannot publish course yet. You must add at least 1 section, 1 video lesson, and 1 quiz assessment before publishing.';
+      this.courseForm.patchValue({ isPublished: false });
+      return;
+    }
+
     this.isSubmitting = true;
     this.error = '';
     this.successMessage = '';
@@ -221,7 +269,11 @@ export class CourseEdit implements OnInit {
     this.courseService.updateCourse(request).subscribe({
       next: () => {
         this.isSubmitting = false;
-        this.successMessage = 'Course basic information updated successfully!';
+        if (formValues.isPublished) {
+          this.successMessage = '🎉 Course published live! It is now visible in the public catalog for student enrollment.';
+        } else {
+          this.successMessage = 'Course information saved successfully (Draft mode).';
+        }
       },
       error: (err) => {
         this.isSubmitting = false;

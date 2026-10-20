@@ -10,8 +10,14 @@
       </a>
       <div class="header-content-row">
         <div>
-          <h1>Edit Course & Curriculum</h1>
-          <p>Manage your course settings, pricing, and video lecture curriculum.</p>
+          <div class="title-with-badge">
+            <h1>Edit Course &amp; Curriculum</h1>
+            <span class="header-status-pill" [class.live]="isPublished" [class.draft]="!isPublished">
+              <span class="status-dot"></span>
+              {{ isPublished ? 'Live in Catalog' : 'Draft Mode' }}
+            </span>
+          </div>
+          <p>Manage your course settings, pricing, video lecture curriculum, and mastery assessments.</p>
         </div>
         @if (courseId) {
           <a [routerLink]="['/courses', courseId]" class="btn-secondary btn-preview">
@@ -179,9 +185,93 @@
               </select>
             </div>
             
-            <div class="checkbox-group">
-              <input type="checkbox" id="isPublished" formControlName="isPublished">
-              <label for="isPublished">Publish Course (Make visible in public catalog)</label>
+            <!-- ── Publication & Quality Gate Card ────────────── -->
+            <div class="publication-gate-card" [class.ready]="canPublish" [class.is-live]="isPublished">
+              <div class="gate-header">
+                <div class="gate-title-group">
+                  <span class="gate-icon">{{ isPublished ? '🟢' : (canPublish ? '🚀' : '🔒') }}</span>
+                  <div>
+                    <h3>Publication &amp; Quality Readiness Gate</h3>
+                    <p>{{ isPublished ? 'Your course is live and publicly available in the catalog for student enrollment.' : 'Courses require a syllabus structure, video lectures, and a mastery assessment quiz before going live.' }}</p>
+                  </div>
+                </div>
+                <div class="gate-badge" [class.live]="isPublished" [class.draft]="!isPublished">
+                  {{ isPublished ? 'LIVE & PUBLISHED' : 'UNPUBLISHED DRAFT' }}
+                </div>
+              </div>
+
+              <!-- Readiness Checklist -->
+              <div class="readiness-checklist">
+                <!-- Item 1: Syllabus -->
+                <div class="checklist-item" [class.complete]="hasSyllabus">
+                  <div class="check-icon">{{ hasSyllabus ? '✅' : '❌' }}</div>
+                  <div class="check-details">
+                    <span class="check-title">1. Curriculum Structure / Syllabus</span>
+                    <span class="check-desc">{{ hasSyllabus ? (sections.length + ' module section(s) organized') : 'At least 1 curriculum section is required' }}</span>
+                  </div>
+                  @if (!hasSyllabus) {
+                    <button type="button" class="btn-check-action" (click)="setTab('curriculum')">+ Add Sections ➔</button>
+                  }
+                </div>
+
+                <!-- Item 2: Video Content -->
+                <div class="checklist-item" [class.complete]="hasVideoContent">
+                  <div class="check-icon">{{ hasVideoContent ? '✅' : '❌' }}</div>
+                  <div class="check-details">
+                    <span class="check-title">2. Video Lectures &amp; Content</span>
+                    <span class="check-desc">{{ hasVideoContent ? (totalLessonsWithVideo + ' video lecture(s) linked') : 'At least 1 lesson with a video lecture is required' }}</span>
+                  </div>
+                  @if (!hasVideoContent) {
+                    <button type="button" class="btn-check-action" (click)="setTab('curriculum')">+ Add Video Lessons ➔</button>
+                  }
+                </div>
+
+                <!-- Item 3: Assessments -->
+                <div class="checklist-item" [class.complete]="hasAssessments">
+                  <div class="check-icon">{{ hasAssessments ? '✅' : '❌' }}</div>
+                  <div class="check-details">
+                    <span class="check-title">3. Mastery Assessment Quiz (≥70% Rule)</span>
+                    <span class="check-desc">{{ hasAssessments ? (quizzes.length + ' evaluative quiz assessment(s) configured') : 'At least 1 mastery quiz required for 70% rule certification' }}</span>
+                  </div>
+                  @if (!hasAssessments) {
+                    <button type="button" class="btn-check-action" (click)="setTab('quizzes')">+ Create Quiz ➔</button>
+                  }
+                </div>
+              </div>
+
+              <!-- Publication Action Row -->
+              <div class="gate-actions-row">
+                @if (isPublished) {
+                  <div class="published-state-box">
+                    <span>🌟 Your course is currently live! Any curriculum edits you make update the classroom in real time.</span>
+                    <button type="button" class="btn-unpublish" (click)="togglePublish(false)" [disabled]="isSubmitting">
+                      {{ isSubmitting ? 'Updating...' : 'Revert to Unpublished Draft' }}
+                    </button>
+                  </div>
+                } @else {
+                  @if (canPublish) {
+                    <div class="publish-ready-box">
+                      <div class="ready-text">
+                        <strong>🎉 Ready for Launch!</strong>
+                        <span>All curriculum, video, and assessment requirements are satisfied.</span>
+                      </div>
+                      <button type="button" class="btn-publish-live" (click)="togglePublish(true)" [disabled]="isSubmitting">
+                        {{ isSubmitting ? 'Publishing...' : '🚀 Publish Course Live to Students' }}
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="publish-locked-box">
+                      <div class="locked-text">
+                        <strong>🔒 Publishing Locked</strong>
+                        <span>Fulfill all 3 checklist items above to enable publishing.</span>
+                      </div>
+                      <button type="button" class="btn-publish-disabled" disabled title="Complete syllabus, videos, and quizzes to unlock publishing">
+                        Publishing Locked
+                      </button>
+                    </div>
+                  }
+                }
+              </div>
             </div>
 
             <!-- Actions -->
