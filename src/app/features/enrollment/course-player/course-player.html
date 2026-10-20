@@ -550,17 +550,17 @@
             
             <div class="cert-stats-row">
               <div class="stat-item">
-                <span class="stat-label">Curriculum</span>
+                <span class="stat-label">Curriculum:</span>
                 <span class="stat-value">100% Modules Completed</span>
               </div>
               <div class="stat-divider">•</div>
               <div class="stat-item">
-                <span class="stat-label">Assessment Result</span>
+                <span class="stat-label">Assessment Result:</span>
                 <span class="stat-value">{{ learningData.certificate.grade || 'Passed with Distinction (≥70%)' }}</span>
               </div>
               <div class="stat-divider">•</div>
               <div class="stat-item">
-                <span class="stat-label">Academic Status</span>
+                <span class="stat-label">Academic Status:</span>
                 <span class="stat-value">Verified Graduate</span>
               </div>
             </div>
@@ -621,7 +621,15 @@
 
       <div class="cert-modal-actions">
         <button type="button" class="btn-secondary" (click)="closeCertificateModal()">Close</button>
-        <button type="button" class="btn-print" (click)="printCertificate()">🖨️ Print / Save as PDF</button>
+        <button type="button" class="btn-download-img" (click)="downloadCertificatePng()" [disabled]="isDownloadingPng" title="Download ultra-high resolution certificate PNG image">
+          {{ isDownloadingPng ? '⏳ Saving Image...' : '🖼️ Download Image (PNG)' }}
+        </button>
+        <button type="button" class="btn-download-pdf" (click)="downloadCertificatePdf()" [disabled]="isDownloadingPdf" title="Download official landscape A4 certificate PDF">
+          {{ isDownloadingPdf ? '⏳ Generating PDF...' : '📥 Download Official PDF' }}
+        </button>
+        <button type="button" class="btn-print" (click)="printCertificate()" title="Open browser print dialog">
+          🖨️ Print
+        </button>
       </div>
     </div>
   </div>

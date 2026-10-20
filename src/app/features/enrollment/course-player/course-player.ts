@@ -8,6 +8,8 @@ import { QuizService } from '../services/quiz.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { CourseLearning, LearningLesson, LearningSection } from '../models/learning.model';
 import { Quiz, QuizAttemptResult, SubmitQuizAttemptRequest } from '../models/quiz.model';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-course-player',
@@ -29,6 +31,8 @@ export class CoursePlayer implements OnInit {
   error = '';
   expandedSections: { [key: number]: boolean } = {};
   showCertificateModal = false;
+  isDownloadingPdf = false;
+  isDownloadingPng = false;
   
   toastMessage = '';
   showToast = false;
@@ -349,6 +353,114 @@ export class CoursePlayer implements OnInit {
     this.showCertificateModal = false;
   }
 
+  async downloadCertificatePdf(): Promise<void> {
+    const certElem = document.getElementById('printable-certificate');
+    if (!certElem || this.isDownloadingPdf) return;
+
+    this.isDownloadingPdf = true;
+    this.triggerToast('⏳ Generating official high-resolution certificate PDF...');
+
+    try {
+      // Capture the certificate element with html2canvas at high DPI
+      const canvas = await html2canvas(certElem, {
+        scale: 2.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        onclone: (clonedDoc) => {
+          const clonedCert = clonedDoc.getElementById('printable-certificate');
+          if (clonedCert) {
+            clonedCert.style.boxShadow = 'none';
+            clonedCert.style.margin = '0 auto';
+          }
+        }
+      });
+
+      // Standard A4 Landscape: 297mm x 210mm
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+
+      const pageWidth = 297;
+      const pageHeight = 210;
+      const margin = 8; // 8mm margin around certificate
+
+      const availableWidth = pageWidth - (margin * 2);
+      const availableHeight = pageHeight - (margin * 2);
+
+      // Maintain aspect ratio
+      const canvasRatio = canvas.width / canvas.height;
+      let targetWidth = availableWidth;
+      let targetHeight = targetWidth / canvasRatio;
+
+      if (targetHeight > availableHeight) {
+        targetHeight = availableHeight;
+        targetWidth = targetHeight * canvasRatio;
+      }
+
+      // Center on page
+      const xOffset = margin + (availableWidth - targetWidth) / 2;
+      const yOffset = margin + (availableHeight - targetHeight) / 2;
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      pdf.addImage(imgData, 'JPEG', xOffset, yOffset, targetWidth, targetHeight, undefined, 'FAST');
+
+      const studentName = (this.learningData?.certificate?.studentName || 'Student').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const certId = (this.learningData?.certificate?.certificateNumber || 'CERT').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `SkillHub_Certificate_${studentName}_${certId}.pdf`;
+
+      pdf.save(filename);
+      this.triggerToast('🎓 Certificate PDF downloaded successfully!');
+    } catch (err) {
+      console.error('Failed to generate certificate PDF', err);
+      this.triggerToast('⚠️ Could not generate PDF directly, opening print preview...');
+      this.printCertificate();
+    } finally {
+      this.isDownloadingPdf = false;
+    }
+  }
+
+  async downloadCertificatePng(): Promise<void> {
+    const certElem = document.getElementById('printable-certificate');
+    if (!certElem || this.isDownloadingPng) return;
+
+    this.isDownloadingPng = true;
+    this.triggerToast('⏳ Preparing high-resolution certificate image...');
+
+    try {
+      const canvas = await html2canvas(certElem, {
+        scale: 3, // Ultra-sharp 300 DPI image
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      const imgUrl = canvas.toDataURL('image/png', 1.0);
+      const studentName = (this.learningData?.certificate?.studentName || 'Student').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const certId = (this.learningData?.certificate?.certificateNumber || 'CERT').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const filename = `SkillHub_Certificate_${studentName}_${certId}.png`;
+
+      const downloadLink = document.createElement('a');
+      downloadLink.href = imgUrl;
+      downloadLink.download = filename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      this.triggerToast('🖼️ Certificate image (PNG) downloaded successfully!');
+    } catch (err) {
+      console.error('Failed to generate certificate image', err);
+      this.triggerToast('⚠️ Image download encountered an issue.');
+    } finally {
+      this.isDownloadingPng = false;
+    }
+  }
+
   printCertificate(): void {
     const certElem = document.getElementById('printable-certificate');
     if (!certElem) {
@@ -367,8 +479,10 @@ export class CoursePlayer implements OnInit {
     iframe.style.position = 'fixed';
     iframe.style.right = '0';
     iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
+    iframe.style.width = '1120px';
+    iframe.style.height = '792px';
+    iframe.style.opacity = '0';
+    iframe.style.pointerEvents = 'none';
     iframe.style.border = '0';
     iframe.setAttribute('aria-hidden', 'true');
     iframe.id = 'certificate-print-frame';
@@ -404,8 +518,8 @@ export class CoursePlayer implements OnInit {
           ${styles}
           <style>
             @page {
-              size: landscape;
-              margin: 0;
+              size: A4 landscape;
+              margin: 6mm;
             }
             *, *::before, *::after {
               box-sizing: border-box;
@@ -413,10 +527,9 @@ export class CoursePlayer implements OnInit {
             html, body {
               margin: 0 !important;
               padding: 0 !important;
-              width: 100vw !important;
-              height: 100vh !important;
+              width: 100% !important;
+              height: 100% !important;
               background: #ffffff !important;
-              overflow: hidden !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
               display: flex !important;
@@ -425,24 +538,22 @@ export class CoursePlayer implements OnInit {
             }
             #printable-certificate {
               position: relative !important;
-              width: 100vw !important;
-              height: 100vh !important;
-              max-width: 100vw !important;
-              max-height: 100vh !important;
-              margin: 0 !important;
+              width: 100% !important;
+              max-width: 285mm !important;
+              height: auto !important;
+              max-height: 198mm !important;
+              margin: 0 auto !important;
               border-radius: 0 !important;
               box-shadow: none !important;
-              border: 14px solid #0f172a !important;
+              border: 12px solid #0f172a !important;
               outline: 3px solid #d97706 !important;
-              outline-offset: -8px !important;
-              padding: 12px !important;
+              outline-offset: -7px !important;
+              padding: 10px !important;
               background: radial-gradient(ellipse at center, #ffffff 0%, #fdfcf7 60%, #f7f1e5 100%) !important;
-              display: flex !important;
-              flex-direction: column !important;
-              justify-content: center !important;
               box-sizing: border-box !important;
               page-break-inside: avoid !important;
               break-inside: avoid !important;
+              overflow: visible !important;
             }
             .cert-inner-border {
               height: 100% !important;
@@ -450,7 +561,7 @@ export class CoursePlayer implements OnInit {
               display: flex !important;
               flex-direction: column !important;
               justify-content: space-between !important;
-              padding: 24px 36px 20px !important;
+              padding: 20px 28px 14px !important;
             }
           </style>
         </head>
@@ -477,7 +588,7 @@ export class CoursePlayer implements OnInit {
           }
         }, 3000);
       }
-    }, 400);
+    }, 450);
   }
 
   triggerToast(msg: string): void {
