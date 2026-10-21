@@ -46,8 +46,12 @@ export class AdminUsers implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.authService.currentRoles$.subscribe(() => {
+      if (this.isSuperAdmin) {
+        this.loadPermissionMatrix();
+      }
+    });
     this.loadUsers();
-    this.loadPermissionMatrix();
   }
 
   loadUsers(): void {
@@ -66,6 +70,7 @@ export class AdminUsers implements OnInit {
   }
 
   loadPermissionMatrix(): void {
+    if (!this.isSuperAdmin) return;
     this.permissionService.getPermissionMatrix().subscribe({
       next: (matrix: PermissionMatrix) => {
         this.categories = matrix.categories || [];

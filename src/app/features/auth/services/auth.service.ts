@@ -67,7 +67,10 @@ export class AuthService {
       localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
     }
     
+    const parsedId = this.getUserIdFromToken(response.token) || (response as any).userId;
     const userInfo = {
+      id: parsedId,
+      userId: parsedId,
       email: response.email,
       fullName: response.fullName
     };
@@ -165,7 +168,7 @@ export class AuthService {
     }
 
     const request: RefreshRequest = { token: refreshToken };
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/refresh-token`, request)
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/refresh`, request)
       .pipe(
         tap(response => {
           this.saveStateToStorage(response);
@@ -181,9 +184,9 @@ export class AuthService {
   logout(): void {
     const refreshToken = this.getRefreshToken();
     if (refreshToken) {
-      this.http.post(`${environment.apiUrl}/auth/revoke-token`, { refreshToken }).subscribe({
+      this.http.post(`${environment.apiUrl}/auth/logout`, { token: refreshToken }).subscribe({
         next: () => {},
-        error: (err) => console.error('Error revoking token', err)
+        error: () => {}
       });
     }
     this.clearState();
@@ -214,11 +217,31 @@ export class AuthService {
   }
 
   getUserId(): number | null {
-    const token = this.getToken();
+    const userRaw = localStorage.getItem(this.USER_KEY);
+    if (userRaw) {
+      try {
+        const u = JSON.parse(userRaw);
+        if (u.id || u.userId) {
+          return parseInt(u.id || u.userId, 10);
+        }
+      } catch {}
+    }
+    return this.getUserIdFromToken(this.getToken() || '');
+  }
+
+  private getUserIdFromToken(token: string): number | null {
     if (!token) return null;
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.sub ? parseInt(payload.sub, 10) : (payload.nameid ? parseInt(payload.nameid, 10) : null);
+      const base64Url = token.split('.')[1];
+      if (!base64Url) return null;
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(decodeURIComponent(escape(atob(base64))));
+      const idVal = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] 
+                 || payload.nameid 
+                 || payload.sub 
+                 || payload.id 
+                 || payload.userId;
+      return idVal ? parseInt(idVal, 10) : null;
     } catch {
       return null;
     }

@@ -17,8 +17,17 @@ export class Navbar implements OnInit, OnDestroy {
   isAdmin = false;
   isStudent = false;
   isProductSupport = false;
+  isOnlyProductSupport = false;
   mobileMenuOpen = false;
   scrolled = false;
+
+  get adminPanelLabel(): string {
+    return this.isOnlyProductSupport ? 'Support Panel' : 'Admin Panel';
+  }
+
+  get adminPanelIcon(): string {
+    return this.isOnlyProductSupport ? '🎧' : '🛡️';
+  }
 
   userDropdownOpen = false;
 
@@ -37,11 +46,13 @@ export class Navbar implements OnInit, OnDestroy {
         this.isAdmin = roles.includes('SuperAdmin') || roles.includes('SubAdmin') || roles.includes('ProductSupport');
         this.isStudent = roles.includes('Student');
         this.isProductSupport = roles.includes('ProductSupport');
+        this.isOnlyProductSupport = roles.includes('ProductSupport') && !roles.includes('SuperAdmin') && !roles.includes('SubAdmin');
       } else {
         this.canCreateCourse = false;
         this.isAdmin = false;
         this.isStudent = false;
         this.isProductSupport = false;
+        this.isOnlyProductSupport = false;
       }
     });
 

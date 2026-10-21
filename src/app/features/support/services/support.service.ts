@@ -57,6 +57,10 @@ export class SupportService {
     return this.http.put<SupportTicket>(`${this.baseUrl}/admin/tickets/${ticketId}/status`, { status });
   }
 
+  updateTicketPriority(ticketId: number, priority: string): Observable<SupportTicket> {
+    return this.http.put<SupportTicket>(`${this.baseUrl}/admin/tickets/${ticketId}/priority`, { priority });
+  }
+
   assignTicket(ticketId: number, assignedAdminId: number | null): Observable<SupportTicket> {
     return this.http.put<SupportTicket>(`${this.baseUrl}/admin/tickets/${ticketId}/assign`, { assignedAdminId });
   }

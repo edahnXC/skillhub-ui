@@ -30,7 +30,7 @@
 
         @if (isAdmin) {
           <a routerLink="/admin" routerLinkActive="active-link" class="nav-link admin-link">
-            <span class="shield-icon">🛡️</span> Admin Panel
+            <span class="shield-icon">{{ adminPanelIcon }}</span> {{ adminPanelLabel }}
           </a>
         }
 
@@ -86,7 +86,7 @@
 
               @if (isAdmin) {
                 <a routerLink="/admin" class="dropdown-item admin" (click)="closeUserDropdown()">
-                  <span class="dropdown-icon">🛡️</span> Admin Panel
+                  <span class="dropdown-icon">{{ adminPanelIcon }}</span> {{ adminPanelLabel }}
                 </a>
               }
               
@@ -133,7 +133,7 @@
         }
         <a routerLink="/settings" class="mobile-link" (click)="toggleMobileMenu()">⚙️ Account Settings</a>
         @if (isAdmin) {
-          <a routerLink="/admin" class="mobile-link admin-link" (click)="toggleMobileMenu()">🛡️ Admin Panel</a>
+          <a routerLink="/admin" class="mobile-link admin-link" (click)="toggleMobileMenu()">{{ adminPanelIcon }} {{ adminPanelLabel }}</a>
         }
         <div class="mobile-divider"></div>
         <button class="mobile-link mobile-logout" (click)="logout()">🚪 Sign Out</button>

@@ -23,10 +23,12 @@ export class AdminSupport implements OnInit {
   isSending = false;
   isUpdatingStatus = false;
   isUpdatingAssignee = false;
+  isUpdatingPriority = false;
 
   // Custom Dropdown states
   statusDropdownOpen = false;
   assignDropdownOpen = false;
+  priorityDropdownOpen = false;
 
   readonly statusOptions = [
     { id: 'Open', label: 'Open', icon: '🔵', desc: 'Newly submitted, awaiting triage', pillClass: 'status-open' },
@@ -34,6 +36,13 @@ export class AdminSupport implements OnInit {
     { id: 'WaitingOnUser', label: 'Waiting On User', icon: '⏳', desc: 'Reply sent, awaiting student response', pillClass: 'status-waiting' },
     { id: 'Resolved', label: 'Resolved', icon: '✅', desc: 'Issue addressed and resolved', pillClass: 'status-resolved' },
     { id: 'Closed', label: 'Closed', icon: '🔒', desc: 'Inquiry archived and closed', pillClass: 'status-closed' }
+  ];
+
+  readonly priorityOptions = [
+    { id: 'Urgent', label: 'Urgent', icon: '🔴', desc: 'Critical blocker requiring immediate action', pillClass: 'priority-urgent' },
+    { id: 'High', label: 'High', icon: '🟠', desc: 'Major issue impacting learning', pillClass: 'priority-high' },
+    { id: 'Medium', label: 'Medium', icon: '🟡', desc: 'Standard question or request', pillClass: 'priority-medium' },
+    { id: 'Low', label: 'Low', icon: '🟢', desc: 'Minor cosmetic or low priority issue', pillClass: 'priority-low' }
   ];
 
   // Filters
@@ -61,6 +70,13 @@ export class AdminSupport implements OnInit {
     return this.isProductSupport;
   }
 
+  get canChangePriority(): boolean {
+    if (this.isSuperAdmin) return false;
+    if (this.isProductSupport) return true;
+    if (this.isSubAdmin) return this.isAssignedToCurrentUser;
+    return false;
+  }
+
   get canChangeStatus(): boolean {
     if (this.isSuperAdmin) return false;
     if (this.isProductSupport) return true;
@@ -86,19 +102,36 @@ export class AdminSupport implements OnInit {
     if (event) event.stopPropagation();
     if (!this.canChangeStatus) return;
     this.statusDropdownOpen = !this.statusDropdownOpen;
-    if (this.statusDropdownOpen) this.assignDropdownOpen = false;
+    if (this.statusDropdownOpen) {
+      this.assignDropdownOpen = false;
+      this.priorityDropdownOpen = false;
+    }
   }
 
   toggleAssignDropdown(event?: Event): void {
     if (event) event.stopPropagation();
     if (!this.canAssign) return;
     this.assignDropdownOpen = !this.assignDropdownOpen;
-    if (this.assignDropdownOpen) this.statusDropdownOpen = false;
+    if (this.assignDropdownOpen) {
+      this.statusDropdownOpen = false;
+      this.priorityDropdownOpen = false;
+    }
+  }
+
+  togglePriorityDropdown(event?: Event): void {
+    if (event) event.stopPropagation();
+    if (!this.canChangePriority) return;
+    this.priorityDropdownOpen = !this.priorityDropdownOpen;
+    if (this.priorityDropdownOpen) {
+      this.statusDropdownOpen = false;
+      this.assignDropdownOpen = false;
+    }
   }
 
   closeDropdowns(): void {
     this.statusDropdownOpen = false;
     this.assignDropdownOpen = false;
+    this.priorityDropdownOpen = false;
   }
 
   selectStatus(newStatus: string): void {
@@ -106,6 +139,14 @@ export class AdminSupport implements OnInit {
     if (!this.canChangeStatus) return;
     if (this.selectedTicket && this.selectedTicket.status !== newStatus) {
       this.onStatusChange(newStatus);
+    }
+  }
+
+  selectPriority(newPriority: string): void {
+    this.closeDropdowns();
+    if (!this.canChangePriority) return;
+    if (this.selectedTicket && this.selectedTicket.priority !== newPriority) {
+      this.onPriorityChange(newPriority);
     }
   }
 
@@ -124,6 +165,16 @@ export class AdminSupport implements OnInit {
       icon: '📌',
       desc: '',
       pillClass: 'status-default'
+    };
+  }
+
+  getCurrentPriorityMeta(priority: string) {
+    return this.priorityOptions.find(o => o.id.toLowerCase() === (priority || '').toLowerCase()) || {
+      id: priority,
+      label: priority || 'Medium',
+      icon: '🟡',
+      desc: '',
+      pillClass: 'priority-medium'
     };
   }
 
@@ -196,7 +247,13 @@ export class AdminSupport implements OnInit {
   loadStaffUsers(): void {
     this.supportService.getAssignableAdmins().subscribe({
       next: (admins) => {
-        this.staffUsers = admins;
+        // Strict safety filter: SuperAdmin can NEVER be assigned tickets. Only SubAdmin staff can be assigned.
+        this.staffUsers = (admins || []).filter(admin => {
+          const roles = Array.isArray(admin.roles) ? admin.roles : [];
+          const isSuper = roles.some((r: string) => r.toLowerCase() === 'superadmin');
+          const isSub = roles.some((r: string) => r.toLowerCase() === 'subadmin');
+          return isSub && !isSuper;
+        });
       },
       error: (err) => {
         console.error('Failed to load assignable admins', err);
@@ -236,6 +293,27 @@ export class AdminSupport implements OnInit {
         console.error('Failed to update status', err);
         this.isUpdatingStatus = false;
         alert('Failed to update ticket status.');
+      }
+    });
+  }
+
+  onPriorityChange(newPriority: string): void {
+    if (!this.selectedTicket || this.isUpdatingPriority) return;
+
+    this.isUpdatingPriority = true;
+    this.supportService.updateTicketPriority(this.selectedTicket.id, newPriority).subscribe({
+      next: (updated) => {
+        this.selectedTicket!.priority = updated.priority;
+        const listItem = this.tickets.find(t => t.id === updated.id);
+        if (listItem) {
+          listItem.priority = updated.priority;
+        }
+        this.isUpdatingPriority = false;
+      },
+      error: (err) => {
+        console.error('Failed to update priority', err);
+        this.isUpdatingPriority = false;
+        alert('Failed to update ticket priority.');
       }
     });
   }

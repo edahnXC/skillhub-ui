@@ -453,6 +453,76 @@
           }
         }
 
+        /* ── Priority Trigger Button ── */
+        .priority-trigger-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.55rem;
+          padding: 0.55rem 1.1rem;
+          border-radius: 9999px;
+          font-size: 0.85rem;
+          font-weight: 800;
+          cursor: pointer;
+          border: 1.5px solid transparent;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          outline: none;
+
+          .priority-icon {
+            font-size: 0.9rem;
+          }
+
+          .priority-name {
+            letter-spacing: 0.01em;
+          }
+
+          .chevron {
+            font-size: 0.75rem;
+            color: currentColor;
+            opacity: 0.8;
+            transition: transform 0.2s ease;
+
+            &.rotated {
+              transform: rotate(180deg);
+            }
+          }
+
+          &:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          &.priority-urgent {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
+            &:hover:not(:disabled) { background: #fee2e2; }
+          }
+          &.priority-high {
+            background: #fff7ed;
+            color: #c2410c;
+            border-color: #fed7aa;
+            &:hover:not(:disabled) { background: #ffedd5; }
+          }
+          &.priority-medium {
+            background: #fefce8;
+            color: #a16207;
+            border-color: #fef08a;
+            &:hover:not(:disabled) { background: #fef9c3; }
+          }
+          &.priority-low {
+            background: #f0fdf4;
+            color: #15803d;
+            border-color: #bbf7d0;
+            &:hover:not(:disabled) { background: #dcfce7; }
+          }
+        }
+
         /* ── Assignee Trigger Button ── */
         .assign-trigger-btn {
           display: inline-flex;

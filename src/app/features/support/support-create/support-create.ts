@@ -29,13 +29,6 @@ export class SupportCreate {
     { id: 'GeneralInquiry', label: 'General Inquiry', icon: '💡', desc: 'Certificates, partnerships, other feedback' }
   ];
 
-  priorities = [
-    { id: 'Low', label: 'Low', desc: 'Minor question' },
-    { id: 'Medium', label: 'Medium', desc: 'Standard support' },
-    { id: 'High', label: 'High', desc: 'Blocking progress' },
-    { id: 'Urgent', label: 'Urgent', desc: 'Critical issue' }
-  ];
-
   isSubmitting = false;
   errorMessage = '';
 
@@ -46,10 +39,6 @@ export class SupportCreate {
 
   selectCategory(catId: string): void {
     this.form.category = catId;
-  }
-
-  selectPriority(priId: string): void {
-    this.form.priority = priId;
   }
 
   onSubmit(): void {

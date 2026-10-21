@@ -79,41 +79,8 @@
     </div>
 
     <div class="dropdown-filters">
-      <div class="select-wrapper">
-        <label for="filterPriority" class="sr-only">Priority Filter</label>
-        <select 
-          id="filterPriority" 
-          title="Filter by priority"
-          aria-label="Filter by priority"
-          [(ngModel)]="filterPriority" 
-          (ngModelChange)="loadTickets()">
-          <option value="ALL">All Priorities</option>
-          <option value="Urgent">Urgent</option>
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-      </div>
-
-      <div class="select-wrapper">
-        <label for="filterCategory" class="sr-only">Category Filter</label>
-        <select 
-          id="filterCategory" 
-          title="Filter by category"
-          aria-label="Filter by category"
-          [(ngModel)]="filterCategory" 
-          (ngModelChange)="loadTickets()">
-          <option value="ALL">All Categories</option>
-          <option value="CourseContent">Course & Content</option>
-          <option value="PaymentBilling">Payment & Billing</option>
-          <option value="AccountAccess">Account & Login</option>
-          <option value="TechnicalIssue">Technical Issue</option>
-          <option value="GeneralInquiry">General Inquiry</option>
-        </select>
-      </div>
-
       <button type="button" class="btn-refresh" (click)="loadTickets()" title="Refresh tickets">
-        🔄 Refresh
+        🔄 Refresh Queue
       </button>
     </div>
   </div>
@@ -276,6 +243,54 @@
                           <span class="opt-desc">{{ opt.desc }}</span>
                         </div>
                         @if (selectedTicket.status === opt.id) {
+                          <span class="opt-check">✓</span>
+                        }
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Custom Dynamic Priority Selector Dropdown -->
+            <div class="custom-select-container priority-dropdown-wrapper">
+              <span class="control-label">Priority / Urgency</span>
+              <div class="dropdown-trigger-wrapper">
+                <button 
+                  type="button" 
+                  class="priority-trigger-btn"
+                  [class.disabled-trigger]="!canChangePriority"
+                  [ngClass]="getCurrentPriorityMeta(selectedTicket.priority).pillClass"
+                  (click)="togglePriorityDropdown($event)"
+                  [disabled]="isUpdatingPriority || !canChangePriority"
+                  [title]="canChangePriority ? 'Click to assign or change urgency/priority' : 'Priority is assigned by Product Support'"
+                  aria-haspopup="listbox"
+                  [attr.aria-expanded]="priorityDropdownOpen"
+                  id="ticketPriorityDropdownBtn">
+                  <span class="priority-icon">{{ getCurrentPriorityMeta(selectedTicket.priority).icon }}</span>
+                  <span class="priority-name">{{ getCurrentPriorityMeta(selectedTicket.priority).label }}</span>
+                  @if (canChangePriority) {
+                    <span class="chevron" [class.rotated]="priorityDropdownOpen">▾</span>
+                  }
+                </button>
+
+                @if (priorityDropdownOpen && canChangePriority) {
+                  <div class="custom-dropdown-menu priority-menu animate-fade-in-up" role="listbox" (click)="$event.stopPropagation()">
+                    <div class="menu-header">Assign Urgency Level</div>
+                    @for (opt of priorityOptions; track opt.id) {
+                      <button 
+                        type="button"
+                        class="menu-option-item"
+                        [class.selected]="selectedTicket.priority.toLowerCase() === opt.id.toLowerCase()"
+                        (click)="selectPriority(opt.id)"
+                        role="option">
+                        <div class="opt-left">
+                          <span class="opt-pill" [ngClass]="opt.pillClass">
+                            {{ opt.icon }} {{ opt.label }}
+                          </span>
+                          <span class="opt-desc">{{ opt.desc }}</span>
+                        </div>
+                        @if (selectedTicket.priority.toLowerCase() === opt.id.toLowerCase()) {
                           <span class="opt-check">✓</span>
                         }
                       </button>

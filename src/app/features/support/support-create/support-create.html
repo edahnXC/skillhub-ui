@@ -54,20 +54,12 @@
           <span class="field-hint">A concise summary helps our staff route your issue faster.</span>
         </div>
 
-        <!-- Priority Selector -->
-        <div class="form-group">
-          <label class="section-label">Urgency / Priority Level <span class="required">*</span></label>
-          <div class="priority-selector">
-            @for (pri of priorities; track pri.id) {
-              <button 
-                type="button" 
-                class="priority-chip"
-                [class.selected]="form.priority === pri.id"
-                [class.urgent]="pri.id === 'Urgent'"
-                (click)="selectPriority(pri.id)">
-                {{ pri.label }}
-              </button>
-            }
+        <!-- Support Triage Notice -->
+        <div class="triage-notice-box" style="margin-bottom: 20px; padding: 14px 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #6366f1; border-radius: 8px; display: flex; gap: 12px; align-items: center;">
+          <span style="font-size: 22px;">🎧</span>
+          <div style="font-size: 13px; color: #475569; line-height: 1.5;">
+            <strong style="color: #1e293b; display: block; font-size: 13.5px; margin-bottom: 2px;">Automatic Product Support Triage</strong>
+            Ticket priority and urgency are assigned directly by our Product Support specialists upon review to ensure appropriate routing.
           </div>
         </div>
 

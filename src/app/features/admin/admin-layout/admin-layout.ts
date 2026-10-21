@@ -13,6 +13,7 @@ import { HasPermissionDirective } from '../../../core/directives/has-permission.
 })
 export class AdminLayout implements OnInit {
   isSuperAdmin = false;
+  isOnlyProductSupport = false;
 
   constructor(public authService: AuthService, private router: Router) {}
 
@@ -20,13 +21,15 @@ export class AdminLayout implements OnInit {
     this.authService.currentRoles$.subscribe(roles => {
       if (Array.isArray(roles)) {
         this.isSuperAdmin = roles.includes('SuperAdmin');
-        if (roles.includes('ProductSupport') && !roles.includes('SuperAdmin') && !roles.includes('SubAdmin')) {
+        this.isOnlyProductSupport = roles.includes('ProductSupport') && !roles.includes('SuperAdmin') && !roles.includes('SubAdmin');
+        if (this.isOnlyProductSupport) {
           if (this.router.url === '/admin' || this.router.url === '/admin/users') {
             this.router.navigate(['/admin/support']);
           }
         }
       } else {
         this.isSuperAdmin = false;
+        this.isOnlyProductSupport = false;
       }
     });
   }
